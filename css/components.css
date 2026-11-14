@@ -1,0 +1,144 @@
+/* ========== 卡片 ========== */
+.card {
+  background: rgba(250, 246, 238, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+
+[data-theme="songya"] .card {
+  background: rgba(255, 255, 255, 0.85);
+}
+/* ========== 节标题 ========== */
+.section-title {
+  font-size: 13px;
+  color: var(--ink-dim);
+  letter-spacing: 4px;
+  margin: 20px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-title::before,
+.section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* ========== 按钮 ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  background: var(--cinnabar);
+  color: var(--paper);
+  font-family: var(--font-title);
+  font-size: 14px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn.ghost {
+  background: transparent;
+  color: var(--cinnabar);
+  border: 1px solid var(--cinnabar);
+}
+
+/* ========== 输入框 ========== */
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--ink);
+  transition: border-color 0.2s;
+}
+.input:focus {
+  border-color: var(--gold);
+}
+
+/* ========== 标签 ========== */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 1px;
+}
+
+/* ========== 头像 ========== */
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+.avatar.md { width: 48px; height: 48px; }
+.avatar.lg { width: 80px; height: 80px; }
+
+/* ========== 空状态 ========== */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--ink-dim);
+  font-size: 14px;
+  letter-spacing: 2px;
+  line-height: 2;
+}
+
+/* ========== 页面顶部栏 ========== */
+.page-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0 4px;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.page-header-back {
+  background: none;
+  border: none;
+  color: var(--cinnabar);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px 12px 8px 0;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.page-header-title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-title);
+  font-size: 16px;
+  letter-spacing: 4px;
+  color: var(--ink);
+  margin-right: 32px;   /* 给左侧返回键留位，让标题视觉居中 */
+}
+
+.app-modal-title {
+  font-family: var(--font-title);
+  font-size: var(--font-size-title);
+  color: var(--cinnabar);
+  letter-spacing: 4px;
+  text-align: center;
+  margin-bottom: 16px;
+  font-weight: 500;
+}

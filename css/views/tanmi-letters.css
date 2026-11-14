@@ -1,0 +1,337 @@
+/* ========== 书信 ========== */
+
+/* 顶栏 */
+.letters-topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+  margin-bottom: 12px;
+}
+.letters-back {
+  background: none;
+  border: none;
+  color: var(--cinnabar);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px 12px 8px 0;
+  font-family: inherit;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: left;
+}
+.letters-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-title);
+  font-size: 16px;
+  letter-spacing: 4px;
+  color: var(--ink);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.letters-icon-group {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+.letters-icon-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--cinnabar);
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s;
+}
+.letters-icon-btn:hover { opacity: 0.7; }
+.letters-icon-btn svg { width: 20px; height: 20px; }
+
+/* Tab */
+.letters-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 4px;
+  margin-bottom: 16px;
+}
+.letters-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-family: var(--font-title);
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: var(--ink-dim);
+  background: var(--paper-soft);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.letters-tab.on {
+  background: var(--cinnabar);
+  color: #fff;
+}
+
+/* 信件卡片 */
+.letter-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  background: var(--paper);
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.letter-card:hover {
+  border-color: var(--cinnabar);
+}
+.letter-card.unread {
+  background: rgba(138, 43, 43, 0.04);
+  border-color: rgba(138, 43, 43, 0.25);
+}
+.letter-card-left { flex: 1; min-width: 0; }
+.letter-card-name {
+  font-family: var(--font-title);
+  font-size: 15px;
+  letter-spacing: 2px;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.letter-card.unread .letter-card-name {
+  color: var(--cinnabar);
+  font-weight: 600;
+}
+.letter-card-time {
+  font-size: 12px;
+  color: var(--ink-dim);
+  letter-spacing: 1px;
+}
+.letter-card-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.letter-seal {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  opacity: 0.9;
+  mix-blend-mode: multiply;
+}
+.letter-new {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--cinnabar);
+  color: #fff;
+  border-radius: 3px;
+  letter-spacing: 1px;
+}
+
+/* 筛选抽屉 */
+.filter-drawer-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.filter-drawer {
+  width: 100%;
+  max-width: 720px;
+  background: var(--paper);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  animation: filter-slide-up 0.25s ease;
+}
+@keyframes filter-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.filter-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.filter-drawer-header span {
+  font-family: var(--font-title);
+  font-size: 16px;
+  color: var(--cinnabar);
+  letter-spacing: 4px;
+}
+.filter-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--ink-dim);
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.filter-section-title {
+  font-size: 13px;
+  color: var(--ink-dim);
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+}
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  padding: 6px 14px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--ink-soft);
+  background: var(--paper-soft);
+  border: 1px solid var(--line-light);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chip.on {
+  background: var(--cinnabar);
+  color: #fff;
+  border-color: var(--cinnabar);
+}
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+/* 写信页 */
+.letter-new-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.letter-new-page .input { font-size: 14px; }
+.letter-new-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.letter-new-actions .btn { flex: 1; }
+
+/* 读信页 */
+.letter-read-page {
+  min-height: calc(100dvh - 100px);
+  display: flex;
+  flex-direction: column;
+}
+.letter-read-topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+  margin-bottom: 16px;
+}
+.letter-read-back {
+  background: none;
+  border: none;
+  color: var(--cinnabar);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px 12px 8px 0;
+  font-family: inherit;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: left;
+}
+.letter-read-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-title);
+  font-size: 16px;
+  letter-spacing: 4px;
+  color: var(--ink);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.letter-read-more {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--ink-dim);
+  cursor: pointer;
+  padding: 0 6px;
+  margin-left: auto;
+}
+
+/* 信纸 */
+.letter-paper {
+  position: relative;
+  flex: 1;
+  padding: 32px 15%;
+  background: var(--paper);
+  background-image: var(--bg-letter, none);
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-light);
+  box-shadow: var(--shadow);
+  min-height: 400px;
+}
+.letter-paper-seal {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  opacity: 0.85;
+  transform: rotate(-8deg);
+  mix-blend-mode: multiply;
+}
+.letter-paper-content {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 2.2;
+  color: var(--ink);
+  letter-spacing: 1px;
+  word-break: break-word;
+}
+.letter-paper-time {
+  margin-top: 40px;
+  padding-right: 20px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--ink-dim);
+  letter-spacing: 1px;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+/* 👈 解决竖排文字标点符号跑偏的问题 */
+[style*="writing-mode: vertical-rl"] {
+  text-align: start;
+}
+
+/* 👈 保证信纸内容可以左右平滑滚动，但隐藏滚动条 */
+[style*="writing-mode: vertical-rl"]::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}

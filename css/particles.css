@@ -1,0 +1,8 @@
+/* 粒子容器 */
+#particle-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+}

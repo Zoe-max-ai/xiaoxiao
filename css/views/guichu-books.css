@@ -1,0 +1,578 @@
+/* ========== 书卷 ========== */
+
+/* 顶栏 */
+.books-topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
+  margin-bottom: 20px;
+}
+
+.books-back {
+  background: none;
+  border: none;
+  color: var(--cinnabar);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px 12px 8px 0;
+  font-family: inherit;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: left;
+}
+.books-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-title);
+  font-size: 16px;
+  letter-spacing: 4px;
+  color: var(--ink);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.books-char-switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--cinnabar);
+  cursor: pointer;
+  padding: 6px 4px;
+  letter-spacing: 2px;
+  margin-left: auto;              /* ← 新加 */
+}
+.books-switch-arrow {
+  font-size: 10px;
+  opacity: 0.7;
+}
+/* 下拉菜单 */
+.books-char-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  min-width: 120px;
+  background: var(--paper);
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  overflow: hidden;
+  display: none;
+}
+.books-char-dropdown.open {
+  display: block;
+}
+
+.books-char-option {
+  padding: 10px 16px;
+  font-family: var(--font-title);
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.books-char-option:hover {
+  background: var(--paper-soft);
+  color: var(--cinnabar);
+}
+.books-char-option.on {
+  color: var(--cinnabar);
+  font-weight: 600;
+}
+.books-edit-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--cinnabar);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+.books-edit-btn:hover { opacity: 0.7; }
+.books-edit-btn svg { width: 20px; height: 20px; }
+
+/* ========== 书卷主界面（时间轴长廊） ========== */
+.books-layout {
+  position: relative;
+  min-height: calc(100vh - 120px);
+  padding-bottom: 60px;
+}
+
+/* 中间那根贯穿上下的线 */
+.books-timeline {
+  position: relative;
+  padding: 20px 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.books-timeline::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: var(--line); /* 浅色虚线 */
+  transform: translateX(-50%);
+}
+
+/* 每一行 */
+.timeline-item {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  cursor: pointer;
+  padding: 0 16px;
+}
+
+/* 左右交替排列 */
+.timeline-item.item-left { flex-direction: row; }
+.timeline-item.item-right { flex-direction: row-reverse; }
+
+/* 中间的时间节点圆圈 */
+.time-tag {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+.tag-circle {
+  width: 36px;
+  height: 36px;
+  background: #b48a5a; /* 参考图里的棕色/金色 */
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-title);
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(180, 138, 90, 0.4);
+}
+
+/* 文本卡片 */
+.time-card {
+  width: calc(50% - 30px);
+  background: var(--paper);
+  border: 1px solid var(--line-light);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.timeline-item:hover .time-card {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+.timeline-item.is-active .time-card {
+  border-color: var(--cinnabar); /* 当前选中的高亮 */
+}
+
+.tc-title {
+  font-family: var(--font-title);
+  font-size: 18px;
+  color: var(--ink);
+  margin: 0 0 8px;
+  letter-spacing: 4px;
+}
+.tc-desc {
+  font-size: 12px;
+  color: var(--ink-dim);
+  line-height: 1.8;
+  margin: 0;
+}
+
+/* 占位图（未来可以换成真实的古风插图） */
+.time-image {
+  width: calc(50% - 30px);
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer; /* 👈 让鼠标放上去变成小手 */
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* 加点阴影 */
+  background: var(--paper-soft);
+}
+
+/* 如果里面有 img，让它完美填充 */
+.time-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+/* 鼠标悬停时，图片微微放大 */
+.time-image:hover img {
+  transform: scale(1.05);
+}
+
+.img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-title);
+  font-size: 13px;
+  color: var(--ink-dim);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+.time-image:hover .img-placeholder {
+  background: var(--line-light);
+  color: var(--ink);
+}
+
+/* 左侧文本时，图片在右边，稍微往下错落一点 */
+.item-left .time-image { margin-top: 20px; }
+.item-right .time-image { margin-bottom: 20px; }
+
+/* 隐藏原有的底栏装饰 */
+.books-footer { display: none; }
+
+/* ========== 底部滑出抽屉 ========== */
+.books-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+.books-drawer .drawer-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.books-drawer .drawer-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--paper);
+  border-radius: 20px 20px 0 0;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  max-height: 75vh;
+}
+
+/* 打开状态 */
+.books-drawer.show {
+  pointer-events: auto;
+}
+.books-drawer.show .drawer-mask {
+  opacity: 1;
+}
+.books-drawer.show .drawer-panel {
+  transform: translateY(0);
+}
+
+/* 抽屉内部细节 */
+.drawer-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+  margin: 12px auto 8px;
+}
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  font-family: var(--font-title);
+  font-size: 15px;
+  color: var(--ink-dim);
+  border-bottom: 1px solid var(--line-light);
+}
+.drawer-close {
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--ink-dim);
+  line-height: 1;
+}
+.drawer-list {
+  padding: 16px 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.drawer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: var(--paper-soft);
+  border: 1px solid var(--line-light);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.drawer-item:hover {
+  background: var(--line-light);
+}
+.d-title {
+  font-family: var(--font-title);
+  font-size: 14px;
+  color: var(--ink);
+}
+.d-meta {
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+/* ========== 阅读页 ========== */
+.reader-page {
+  min-height: 100dvh;
+  padding: 0 20px 40px;
+  transition: background 0.3s;
+}
+
+.reader-topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 4px;
+  margin-bottom: 20px;
+}
+
+.reader-back {
+  background: none;
+  border: none;
+  color: var(--cinnabar);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px 12px 8px 0;
+  font-family: inherit;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: left;
+}
+
+.reader-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-title);
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: var(--ink);
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reader-aa {
+  background: none;
+  border: 1px solid var(--line-light);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-family: var(--font-title);
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reader-content {
+  font-size: 16px;
+  line-height: 2.2;
+  letter-spacing: 1px;
+  word-break: break-word;
+  padding: 0 8px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.reader-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 60px;
+  padding: 20px 8px 0;
+  border-top: 1px dashed var(--line-light);
+}
+
+.reader-nav-btn {
+  background: none;
+  border: none;
+  color: var(--cinnabar);
+  font-family: var(--font-title);
+  font-size: 13px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+/* ========== 阅读设置抽屉 ========== */
+.rd-section {
+  margin-bottom: 20px;
+}
+.rd-label {
+  font-size: 12px;
+  color: var(--ink-dim);
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+}
+
+.rd-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.rd-color {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.rd-color.on {
+  border-color: var(--cinnabar);
+  transform: scale(1.1);
+}
+
+.rd-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rd-slider-mark {
+  font-family: var(--font-title);
+  font-size: 14px;
+  color: var(--ink-dim);
+}
+.rd-slider-value {
+  font-size: 12px;
+  color: var(--cinnabar);
+  min-width: 40px;
+  text-align: right;
+}
+
+.rd-font-row {
+  display: flex;
+  gap: 8px;
+}
+.rd-font {
+  flex: 1;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--ink);
+  background: var(--paper-soft);
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.rd-font.on {
+  background: var(--cinnabar);
+  color: #fff;
+  border-color: var(--cinnabar);
+}
+
+.rd-bg-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.rd-bg-cell {
+  aspect-ratio: 3/4;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--paper-soft);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.rd-bg-cell.on {
+  border-color: var(--cinnabar);
+}
+
+/* ========== 剧情编辑页 ========== */
+.book-edit-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.book-edit-page .input {
+  font-size: 14px;
+}
+.book-edit-page textarea {
+  font-family: var(--font-body);
+  line-height: 2;
+}
+.book-edit-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.book-edit-actions .btn {
+  flex: 1;
+}
+
+
+.fold-wrap.is-empty {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 书卷底部白鹤 */
+.books-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding: 20px 24px 0px;        /* ← 下 padding 改 0 */
+  margin-top: auto;
+margin-bottom: -60px; 
+       /* ← 加这个，往上"顶"出屏幕外 */
+  pointer-events: none;
+  min-height: 50px;
+}
+
+.footer-crane {
+  height: 220px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.55;
+  transform: rotate(-3deg) translateY(40px);
+}
+

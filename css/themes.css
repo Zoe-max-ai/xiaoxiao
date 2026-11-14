@@ -1,0 +1,110 @@
+/* ========== 青墨云山（默认） ========== */
+:root {
+  --bg: #f4efe6;
+  --bg-soft: #ece6d8;
+--bg-overlay-opacity: 0.5;
+--font-size-body: 15px;
+--font-size-title: 24px;
+  --paper: #faf6ee;
+  --paper-soft: #f0e9d8;
+  --ink: #2b2b2b;
+  --ink-soft: #4a453d;
+  --ink-dim: #665f55; 
+  --cinnabar: #8a2b2b;
+  --cinnabar-light: #b04a3c;
+  --gold: #b8922e;
+  --green: #4a6b5a;
+  --line: rgba(43, 43, 43, 0.14);
+  --line-light: rgba(43, 43, 43, 0.08);
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+  --font-title: "Noto Serif SC", "Songti SC", serif;
+  --font-body: "Noto Serif SC", "Songti SC", serif;
+  --font-size-base: 15px;
+
+  --radius: 8px;
+  --radius-sm: 4px;
+  --radius-lg: 16px;
+
+  /* 主题背景图 */
+  --bg-chenshi: url("/assets/seed/bg/bg-chenshi-qinglv.jpg");
+  --bg-chat: url("/assets/seed/bg/bg-chat-qinglv.jpg");
+  --bg-letter: url("/assets/seed/bg/bg-letter-qinglv.jpg");
+--chrome-bg: rgba(244, 239, 230, 0.7);
+
+--avatar-frame: url("/assets/seed/frame/frame-qinglv.png");
+
+  /* 气泡（青墨云山） */
+--bubble-me-bg: #faf6ee;
+--bubble-me-text: #2b2b2b;
+--bubble-me-border: #c8c0b0;
+  --bubble-he-bg: #faf6ee;
+  --bubble-he-text: #2b2b2b;
+  --bubble-he-border: #c8c0b0;
+  --bubble-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --bubble-me-deco: url("/assets/seed/seal/seal-du.png");
+  --bubble-he-deco: url("/assets/seed/seal/seal-ji.png");
+
+--umbrella-img: url("../assets/seed/deco/umbrella-bamboo.png");
+
+  /* 书卷 —— 宣纸白（偏暖） */
+  --scroll-body-1: #faf7f0;
+  --scroll-body-2: #fdfbf6;
+  --scroll-body-border: #d8d0c0;
+  --scroll-cat-active-bg: rgba(138, 43, 43, 0.05);
+  --bookmark-1: #fbf8f2;
+  --bookmark-2: #f2ede0;
+  --bookmark-border: rgba(168, 148, 118, 0.3);
+}
+
+/* ========== 宋雅素笺 ========== */
+[data-theme="songya"] {
+  --bg: #f5f1e8;
+  --bg-soft: #ece6d8;
+--bg-overlay-opacity: 0.5;
+--font-size-body: 15px;
+--font-size-title: 24px;
+  --paper: #ffffff;
+  --paper-soft: #faf6ee;
+  --ink: #2a2620;
+  --ink-soft: #4a453d;
+  --ink-dim: #6b6358; 
+  --cinnabar: #8a2b2b;
+  --cinnabar-light: #b04a3c;
+  --gold: #a8845a;
+  --green: #6b7a5a;
+  --line: rgba(42, 38, 32, 0.14);
+  --line-light: rgba(42, 38, 32, 0.08);
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+
+  --font-title: "Noto Serif SC", "Songti SC", serif;
+  --font-body: "Noto Serif SC", "Songti SC", serif;
+
+  --bg-chenshi: url("/assets/seed/bg/bg-chenshi-songya.jpg");
+  --bg-chat: url("/assets/seed/bg/bg-chat-songya.jpg");
+  --bg-letter: url("/assets/seed/bg/bg-letter-songya.jpg");
+
+--avatar-frame: url("/assets/seed/frame/frame-songya.png");
+
+  /* 气泡（宋雅素笺） */
+--bubble-me-bg: #faf6ee;
+--bubble-me-text: #2a2620;
+--bubble-me-border: #a8b89a;
+  --bubble-he-bg: #faf6ee;
+  --bubble-he-text: #2a2620;
+  --bubble-he-border: #a8b89a;
+  --bubble-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --bubble-me-deco: url("/assets/seed/deco/deco-plum-01.png");
+  --bubble-he-deco: url("/assets/seed/deco/deco-bamboo-01.png");
+
+ --umbrella-img: url("../assets/seed/deco/umbrella-maple.png");
+
+  /* 书卷 —— 宋雅素笺（更暖的黄） */
+  --scroll-body-1: #f4e8c8;
+  --scroll-body-2: #fbf1d8;
+  --scroll-body-border: #c8b088;
+  --scroll-cat-active-bg: rgba(168, 132, 90, 0.1);
+  --bookmark-1: #f5ebd0;
+  --bookmark-2: #e8dab8;
+  --bookmark-border: rgba(168, 132, 90, 0.4);
+}

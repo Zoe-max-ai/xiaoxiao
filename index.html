@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="qinglv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>寻风渡</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/particles.css">
+<link rel="stylesheet" href="css/views/tanmi-cards.css">
+<link rel="stylesheet" href="css/views/guichu-chat-settings.css">
+<link rel="stylesheet" href="css/views/chat.css">
+<link rel="stylesheet" href="css/views/tanmi-sign.css">
+<link rel="stylesheet" href="css/views/tanmi-music.css">
+<link rel="stylesheet" href="css/views/guichu-font.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.min.css">
+<link rel="stylesheet" href="css/views/guichu-font.css">
+<link rel="stylesheet" href="css/views/guichu-data.css">
+<link rel="stylesheet" href="css/views/yaji-relation.css">
+<link rel="stylesheet" href="css/views/tanmi-posts.css">
+<link rel="stylesheet" href="css/views/tanmi-letters.css">
+<link rel="stylesheet" href="css/views/guichu-books.css">
+<link rel="stylesheet" href="css/views/wangshi.css">
+<link rel="stylesheet" href="css/views/wangshi-game-new.css">
+<link rel="stylesheet" href="css/views/wangshi-game-edit.css">
+<link rel="stylesheet" href="css/views/wangshi-game-play.css">
+<link rel="stylesheet" href="css/views/chenshi.css">
+<link rel="stylesheet" href="css/views/tanmi.css">
+
+</head>
+<body>
+  <!-- 背景图层 -->
+  <div id="bg-layer"></div>
+
+<!-- 顶部栏 -->
+<header id="topbar">
+  <!-- 👈 加上了 onclick 和 cursor: pointer -->
+  <div id="topbar-user" class="topbar-user" onclick="location.hash = '#/guichu/profile'" style="cursor: pointer;">
+    <img id="user-avatar" class="avatar-sm" alt="">
+    <span id="user-name">未登录</span>
+  </div>
+</header>
+
+  <!-- 主视图容器 -->
+  <main id="view"></main>
+
+  <!-- 底部五导航 -->
+  <nav id="tabbar">
+    <a href="#/chenshi" data-tab="chenshi">
+      <img src="assets/seed/nav/nav-chenshi.png" alt="">
+      <span>尘世</span>
+    </a>
+    <a href="#/yaji" data-tab="yaji">
+      <img src="assets/seed/nav/nav-yaji.png" alt="">
+      <span>雅集</span>
+    </a>
+    <a href="#/wangshi" data-tab="wangshi">
+      <img src="assets/seed/nav/nav-wangshi.png" alt="">
+      <span>往事</span>
+    </a>
+    <a href="#/tanmi" data-tab="tanmi">
+      <img src="assets/seed/nav/nav-tanmi.png" alt="">
+      <span>探秘</span>
+    </a>
+    <a href="#/guichu" data-tab="guichu">
+      <img src="assets/seed/nav/nav-guichu.png" alt="">
+      <span>归处</span>
+    </a>
+  </nav>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

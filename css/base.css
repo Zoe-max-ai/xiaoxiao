@@ -1,0 +1,290 @@
+html, body {
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body, 15px);
+  line-height: 1.7;
+  transition: background-color 0.4s, color 0.4s;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  max-width: 720px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  overflow-x: hidden;
+  background: var(--bg);   /* body 自己的背景（米黄） */
+  box-shadow: 0 0 40px rgba(0,0,0,0.08);  /* 阴影，让"手机"浮起来 */
+}
+
+/* ========== 背景层 ========== */
+#bg-layer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 720px;
+  z-index: -1;
+  background-color: var(--bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image 0.6s, background-color 0.4s;
+}
+
+#bg-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  opacity: var(--bg-overlay-opacity, 0.5);
+  pointer-events: none;
+}
+
+/* ========== 顶栏 ========== */
+#topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line-light);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.avatar-sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+#user-name {
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--ink-soft);
+}
+
+/* ========== 主视图容器 ========== */
+#view {
+  flex: 1;
+  padding: 20px;
+  padding-bottom: 100px;
+  overflow-x: hidden;
+}
+
+/* ========== 底部五导航 ========== */
+#tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--line-light);
+  z-index: 100;
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+}
+
+#tabbar a {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  color: var(--ink-dim);
+  font-size: 12px;
+  letter-spacing: 2px;
+  transition: color 0.2s, opacity 0.2s;
+}
+
+#tabbar a img {
+  width: 28px;
+  height: 28px;
+  opacity: 0.55;
+  transition: opacity 0.2s;
+}
+
+#tabbar a.active {
+  color: var(--cinnabar);
+}
+
+#tabbar a.active img {
+  opacity: 1;
+}
+
+/* ========== 通用 ========== */
+.screen {
+  display: none;
+}
+.screen.active {
+  display: block;
+}
+
+.empty {
+  text-align: center;
+  color: var(--ink-dim);
+  padding: 60px 0;
+  font-size: 14px;
+  letter-spacing: 1px;
+  line-height: 2;
+}
+
+/* 隐藏滚动条 */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 480px) {
+  #view {
+    padding: 16px;
+    padding-bottom: 90px;
+  }
+}
+
+#topbar.hidden,
+#tabbar.hidden {
+  display: none !important;
+}
+
+/* 雅集页：底栏深色半透明 */
+body.yaji #tabbar {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+body.yaji #tabbar a {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body.yaji #tabbar a.active {
+  color: #fff;
+}
+
+body.yaji #tabbar a img {
+  opacity: 0.7;
+}
+
+body.yaji #tabbar a.active img {
+  opacity: 1;
+}
+
+/* 隐藏顶栏和底栏 */
+#topbar.hidden,
+#tabbar.hidden {
+  display: none !important;
+}
+
+
+
+/* 所有文本元素默认可以选中 */
+body {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+input,
+textarea {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
+}
+
+/* ========== 尘世 ========== */
+.chenshi-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.chenshi-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-family: var(--font-title);
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: var(--ink-dim);
+  background: var(--paper-soft);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.chenshi-tab.on {
+  background: var(--cinnabar);
+  color: #fff;
+}
+
+.chenshi-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--paper);
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.chenshi-card:hover {
+  border-color: var(--cinnabar);
+}
+.chenshi-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--paper-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-title);
+  font-size: 16px;
+  color: var(--ink-dim);
+  flex-shrink: 0;
+}
+
+/* =========================================
+ * 👈 全局补丁：强制加深所有说明文字和标题，并加白边防隐身
+ * ========================================= */
+
+/* 所有小字提示、通用动作说明等 */
+.section-title, 
+.form-field label,
+[style*="color: var(--ink-dim)"], 
+[style*="color:var(--ink-dim)"] {
+  color: var(--ink-soft) !important; /* 强制换成较深的墨灰色 */
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9); /* 白色发光托底 */
+}
+
+/* 全局设置的大标题（比如“聊天设置 全局默认”、“盛崖余 的专属动作”） */
+.section-title {
+  color: var(--cinnabar) !important; /* 强制换成朱砂红/主题强调色 */
+  font-size: 15px;
+  letter-spacing: 3px;
+  opacity: 1 !important;
+}
+

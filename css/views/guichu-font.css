@@ -1,0 +1,76 @@
+/* ========== 字体页 ========== */
+
+.font-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.font-option {
+  padding: 12px 16px;
+  background: var(--paper);
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.font-option:hover {
+  border-color: var(--gold);
+}
+
+.font-option.on {
+  border-color: var(--cinnabar);
+  background: rgba(138, 43, 43, 0.04);
+}
+
+.font-option span {
+  color: var(--ink);
+}
+
+.font-size-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.font-size-wrap input[type="range"] {
+  flex: 1;
+  accent-color: var(--cinnabar);
+}
+
+.font-size-label {
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.font-size-value {
+  font-size: 12px;
+  color: var(--cinnabar);
+  width: 40px;
+  text-align: right;
+}
+
+.font-preview {
+  padding: 20px;
+  background: var(--paper);
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.preview-title {
+  font-size: 20px;
+  color: var(--cinnabar);
+  letter-spacing: 4px;
+  margin-bottom: 12px;
+}
+
+.preview-body {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.8;
+  letter-spacing: 1px;
+}

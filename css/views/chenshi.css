@@ -1,0 +1,54 @@
+#btn-add.chenshi-add-btn {
+  background: transparent !important; /* 干掉绿底 */
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--cinnabar) !important;
+  font-family: var(--font-title) !important;
+  font-size: 16px !important;
+}
+/* 确保顶栏是 flex 布局 */
+#topbar {
+  display: flex;
+  align-items: center;
+}
+
+
+
+
+
+/* 毛笔整体容器 */
+.maobi-icon {
+  width: 20px;
+  height: 24px;
+  position: relative;
+  transform: rotate(45deg); /* 稍微倾斜，更有书写感 */
+}
+
+/* 笔杆 */
+.maobi-body {
+  width: 6px;
+  height: 16px;
+  background: var(--paper); /* 笔杆用纸张的米白色 */
+  border-radius: 2px 2px 0 0;
+  position: absolute;
+  top: 0;
+  left: 7px;
+}
+
+/* 笔尖（用水滴形状模拟墨迹） */
+.maobi-tip {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 8px solid var(--paper); /* 笔尖也是白色，如果是朱砂底就是白色笔尖 */
+  position: absolute;
+  bottom: 0;
+  left: 6px;
+  border-radius: 0 0 50% 50%;
+}
+
+#draw-level, #draw-poem {
+  text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+}

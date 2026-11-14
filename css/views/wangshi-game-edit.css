@@ -1,0 +1,294 @@
+/* ========== 游戏编辑器 ========== */
+
+.gamedit-topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
+  margin-bottom: 16px;
+}
+.gamedit-back {
+  background: none;
+  border: none;
+  color: var(--cinnabar);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px 12px 8px 0;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: left;
+}
+.gamedit-title {
+  flex: 1;
+  font-family: var(--font-title);
+  font-size: 16px;
+  letter-spacing: 3px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gamedit-title:hover { color: var(--cinnabar); }
+
+.gamedit-save {
+  background: var(--cinnabar);
+  border: none;
+  color: #fff;
+  font-family: var(--font-title);
+  font-size: 13px;
+  letter-spacing: 2px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.gamedit-save:hover { opacity: 0.85; }
+
+/* 节点列表 */
+.gamedit-nodes {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 4px 16px;
+  margin-bottom: 8px;
+  scrollbar-width: thin;    /* ← 从 none 改成 thin */
+}
+.gamedit-nodes::-webkit-scrollbar {
+  height: 6px;              /* ← 显示滚动条 */
+}
+.gamedit-nodes::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+.gamedit-nodes::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.node-chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  background: var(--paper-soft);
+  border: 1px solid var(--line-light);
+  border-radius: 999px;
+  font-family: var(--font-title);
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.node-chip:hover {
+  border-color: var(--cinnabar);
+}
+.node-chip.on {
+  background: var(--cinnabar);
+  color: #fff;
+  border-color: var(--cinnabar);
+}
+.node-chip-add {
+  color: var(--cinnabar);
+  font-size: 16px;
+  padding: 6px 12px;
+}
+
+/* 编辑区 */
+.gamedit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.gamedit-body .input {
+  font-size: 14px;
+}
+.gamedit-body textarea {
+  font-family: var(--font-body);
+}
+
+/* 选项行 */
+.choice-row {
+  display: grid;
+  grid-template-columns: 1fr 24px 1fr 32px;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.choice-arrow {
+  color: var(--ink-dim);
+  text-align: center;
+  font-size: 14px;
+}
+.choice-target {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+/* 底部按钮 */
+.gamedit-bottom {
+  margin-top: 32px;
+  margin-bottom: 20px;
+}
+.gamedit-bottom .btn {
+  width: 100%;
+  padding: 14px;
+  letter-spacing: 6px;
+}
+
+/* ========== 章节栏 ========== */
+.gamedit-chapters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 4px 8px;
+  scrollbar-width: thin;
+  margin-bottom: 4px;
+}
+.gamedit-chapters::-webkit-scrollbar {
+  height: 6px;
+}
+.gamedit-chapters::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+
+.chapter-chip {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  background: var(--paper);
+  border: 1.5px solid var(--line-light);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-title);
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.chapter-chip:hover {
+  border-color: var(--cinnabar);
+}
+.chapter-chip.on {
+  background: var(--cinnabar);
+  color: #fff;
+  border-color: var(--cinnabar);
+}
+.chapter-chip-add {
+  color: var(--cinnabar);
+  border-style: dashed;
+}
+.chapter-del {
+  font-size: 14px;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.chapter-del:hover { opacity: 1; }
+
+/* ========== 选项块 ========== */
+.choice-block {
+  background: var(--paper-soft);
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.choice-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.choice-row:last-child { margin-bottom: 0; }
+
+.choice-text {
+  flex: 1;
+}
+
+.choice-label {
+  font-size: 12px;
+  color: var(--ink-dim);
+  flex-shrink: 0;
+  width: 40px;
+}
+
+.choice-target {
+  flex: 1;
+}
+
+.choice-nums {
+  gap: 12px;
+}
+
+.choice-nums .choice-label {
+  width: auto;
+}
+
+.gamedit-nodes {
+  scrollbar-width: thin;
+}
+.gamedit-nodes::-webkit-scrollbar {
+  height: 6px;
+}
+.gamedit-nodes::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+
+.gamedit-more {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--ink-dim);
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.gamedit-more:hover { color: var(--cinnabar); }
+
+/* 副作用块 */
+.fx-block {
+  margin-top: 6px;
+  padding: 10px 12px;
+  background: var(--paper-soft);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-light);
+}
+
+.fx-title {
+  font-size: 11px;
+  color: var(--ink-dim);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.fx-checks {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.fx-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.fx-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--cinnabar);
+  cursor: pointer;
+}

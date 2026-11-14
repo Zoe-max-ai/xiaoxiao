@@ -1,0 +1,171 @@
+/* ========== 数据管理 ========== */
+
+/* 存储空间 */
+.storage-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.storage-label {
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+
+.storage-value {
+  font-size: 14px;
+  color: var(--ink);
+  font-family: var(--font-title);
+}
+
+.storage-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.storage-bar-fill {
+  height: 100%;
+  background: var(--cinnabar);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.storage-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.storage-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+/* 数据操作项 */
+.data-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.data-action:hover {
+  border-color: var(--cinnabar);
+}
+
+.data-action.danger .data-action-title {
+  color: var(--cinnabar);
+}
+
+.data-action-title {
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+
+.data-action-sub {
+  font-size: 11px;
+  color: var(--ink-dim);
+}
+
+.data-action-arrow {
+  color: var(--ink-dim);
+  font-size: 18px;
+}
+
+/* 弹窗 */
+.data-modal-title {
+  font-family: var(--font-title);
+  font-size: 16px;
+  color: var(--cinnabar);
+  letter-spacing: 4px;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.data-modal-sub {
+  font-size: 12px;
+  color: var(--ink-dim);
+  text-align: center;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.data-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.data-group-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--paper-soft);
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.data-group-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--cinnabar);
+}
+
+.data-group-name {
+  flex: 1;
+  color: var(--ink);
+}
+
+.data-group-badge {
+  font-size: 10px;
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.data-radio-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.data-radio-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--paper-soft);
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.data-radio-item input[type="radio"] {
+  accent-color: var(--cinnabar);
+}
+
+.data-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.data-modal-actions .btn {
+  flex: 1;
+}

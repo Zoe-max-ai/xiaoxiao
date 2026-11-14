@@ -1,0 +1,17 @@
+/* 新建游戏页 */
+.game-new-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.game-new-page .input {
+  font-size: 14px;
+}
+.game-new-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.game-new-actions .btn {
+  flex: 1;
+}

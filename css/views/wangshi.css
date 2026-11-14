@@ -1,0 +1,60 @@
+/* ========== 往事 ========== */
+
+.wangshi-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 0 4px;
+}
+
+.wangshi-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  background: var(--paper-soft);
+  border: 1px solid var(--line-light);
+  border-radius: 6px;
+  font-family: var(--font-title);
+  font-size: 13px;
+  color: var(--ink-dim);
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.wangshi-tab.on {
+  background: var(--cinnabar);
+  color: #fff;
+  border-color: var(--cinnabar);
+  box-shadow: 0 4px 10px rgba(163, 56, 56, 0.2);
+}
+
+/* 游戏卡片 */
+.game-card {
+  background: var(--paper);
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.game-card:hover {
+  border-color: var(--cinnabar);
+  box-shadow: var(--shadow);
+}
+
+.game-card-title {
+  font-family: var(--font-title);
+  font-size: 15px;
+  color: var(--ink);
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.game-card-meta {
+  font-size: 11px;
+  color: var(--ink-dim);
+  letter-spacing: 1px;
+}
+

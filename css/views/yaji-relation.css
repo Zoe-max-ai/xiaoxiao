@@ -1,0 +1,119 @@
+/* 双进度条 */
+.yaji-relation {
+  margin-top: 16px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.yaji-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.yaji-bar-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  width: 28px;
+  flex-shrink: 0;
+  letter-spacing: 1px;
+}
+
+.yaji-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.yaji-bar-fill {
+  height: 100%;
+  transition: width 0.5s;
+}
+
+.yaji-bar-fill.affection { background: #e88ea8; }
+.yaji-bar-fill.friendship { background: #8eb8e8; }
+
+.yaji-bar-value {
+  font-size: 11px;
+  color: rgba(255,255,255,0.8);
+  width: 24px;
+  text-align: right;
+}
+
+.yaji-status {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: 4px;
+  margin-top: 8px;
+}
+
+/* 人物看法 */
+.yaji-perspective {
+  position: absolute;
+  bottom: 200px;
+  left: 24px;
+  right: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  font-style: italic;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  pointer-events: none;
+}
+
+/* 关系详情弹窗 */
+.relation-block {
+  margin-bottom: 20px;
+}
+
+.relation-block-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.relation-level {
+  color: var(--cinnabar);
+  font-family: var(--font-title);
+  letter-spacing: 2px;
+}
+
+.relation-bar {
+  height: 6px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.relation-bar-fill {
+  height: 100%;
+  transition: width 0.5s;
+}
+
+.relation-bar-fill.affection { background: #e88ea8; }
+.relation-bar-fill.friendship { background: #8eb8e8; }
+
+.relation-traits {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.relation-traits span {
+  display: inline-block;
+  width: 36px;
+  color: var(--ink-dim);
+  font-size: 11px;
+}

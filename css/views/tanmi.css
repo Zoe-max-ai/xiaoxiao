@@ -1,0 +1,44 @@
+/* ===== 探秘页顶部主视觉卡片 ===== */
+.hero-card {
+  position: relative;
+  margin: 16px 20px 0; /* 距离顶部和左右的距离 */
+  height: 160px; /* 卡片高度，差不多占屏幕三分之一到四分之一 */
+  border-radius: 12px; /* 圆角，贴合你整体的卡片风格 */
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); /* 柔和的阴影，增加立体感 */
+}
+
+.hero-bg {
+  width: 100%;
+  height: 100%;
+  background-size: cover;      /* 👈 核心：强制铺满，多余的自动裁剪 */
+  background-position: center; /* 👈 核心：居中显示，保证画面主体不偏 */
+  background-repeat: no-repeat;
+  transition: background-image 0.3s ease;
+}
+
+.hero-content {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 60%); /* 底部暗渐变，让白字清晰 */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  color: #fff;
+}
+
+.hero-content h2 {
+  font-family: var(--font-title);
+  font-size: 22px;
+  letter-spacing: 4px;
+  margin: 0 0 4px;
+  font-weight: normal;
+}
+
+.hero-content p {
+  font-size: 12px;
+  opacity: 0.85;
+  margin: 0;
+  letter-spacing: 1px;
+}

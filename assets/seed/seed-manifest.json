@@ -1,0 +1,73 @@
+{
+  "version": "1.0",
+  "createdAt": "2026-10-05",
+
+  "seals": [
+    { "file": "seal/seal-chen.png",   "char": "尘", "pinyin": "chen",   "size": [180, 180] },
+    { "file": "seal/seal-du.png",     "char": "渡", "pinyin": "du",     "size": [180, 180] },
+    { "file": "seal/seal-feng.png",   "char": "风", "pinyin": "feng",   "size": [180, 180] },
+    { "file": "seal/seal-feng2.png",  "char": "封", "pinyin": "feng2",  "size": [180, 180] },
+    { "file": "seal/seal-ji.png",     "char": "记", "pinyin": "ji",     "size": [180, 180] },
+    { "file": "seal/seal-shuang.png", "char": "霜", "pinyin": "shuang", "size": [180, 180] },
+    { "file": "seal/seal-yin.png",    "char": "印", "pinyin": "yin",    "size": [180, 180] },
+    { "file": "seal/seal-yue.png",    "char": "月", "pinyin": "yue",    "size": [180, 180] }
+  ],
+
+  "icons": [
+    { "file": "icon/icon-bagua.png",   "name": "问易", "size": [96, 96] },
+    { "file": "icon/icon-cards.png",   "name": "笺语", "size": [96, 96] },
+    { "file": "icon/icon-letters.png", "name": "书信", "size": [96, 96] },
+    { "file": "icon/icon-music.png",   "name": "音律", "size": [96, 96] },
+    { "file": "icon/icon-posts.png",   "name": "心绪", "size": [96, 96] },
+    { "file": "icon/icon-sign.png",    "name": "抽签", "size": [96, 96] }
+  ],
+
+  "navIcons": [
+    { "file": "nav/nav-chenshi.png", "name": "尘世", "route": "#/chenshi", "size": [96, 96] },
+    { "file": "nav/nav-yaji.png",    "name": "雅集", "route": "#/yaji",    "size": [96, 96] },
+    { "file": "nav/nav-wangshi.png", "name": "往事", "route": "#/wangshi", "size": [96, 96] },
+    { "file": "nav/nav-tanmi.png",   "name": "探秘", "route": "#/tanmi",   "size": [96, 96] },
+    { "file": "nav/nav-guichu.png",  "name": "归处", "route": "#/guichu",  "size": [96, 96] }
+  ],
+
+  "decos": [
+    { "file": "deco/deco-bamboo-01.png", "name": "竹叶1", "tags": ["竹", "青"] },
+    { "file": "deco/deco-bamboo-02.png", "name": "竹叶2", "tags": ["竹", "青"] },
+    { "file": "deco/deco-boat-01.png",   "name": "小舟1", "tags": ["舟", "渡"] },
+    { "file": "deco/deco-boat-02.png",   "name": "小舟2", "tags": ["舟", "渡"] },
+    { "file": "deco/deco-cloud-01.png",  "name": "云纹1", "tags": ["云", "装饰"] },
+    { "file": "deco/deco-cloud-02.png",  "name": "云纹2", "tags": ["云", "装饰"] },
+    { "file": "deco/deco-crane.png",     "name": "仙鹤", "tags": ["鹤", "叶问舟"] },
+    { "file": "deco/deco-plum-01.png",   "name": "梅花1", "tags": ["梅", "红"] },
+    { "file": "deco/deco-plum-02.png",   "name": "梅花2", "tags": ["梅", "红"] }
+  ],
+
+  "frames": [
+    { "file": "frame/frame-qinglv.png", "name": "青绿山水", "theme": "qinglv", "size": [400, 400] },
+    { "file": "frame/frame-songya.png", "name": "桃花宋雅", "theme": "songya", "size": [400, 400] }
+  ],
+
+"backgrounds": [
+  { "file": "bg/bg-chenshi-qinglv.jpg", "theme": "qinglv", "tags": ["尘世"], "size": [1080, 2340] },
+  { "file": "bg/bg-chenshi-songya.jpg", "theme": "songya", "tags": ["尘世"], "size": [1080, 2340] },
+  { "file": "bg/bg-chat-qinglv.jpg",    "theme": "qinglv", "tags": ["聊天"], "size": [1080, 2340] },
+  { "file": "bg/bg-chat-songya.jpg",    "theme": "songya", "tags": ["聊天"], "size": [1080, 2340] },
+  { "file": "bg/bg-letter-qinglv.jpg",  "theme": "qinglv", "tags": ["信纸"], "size": [1080, 1600] },
+  { "file": "bg/bg-letter-songya.jpg",  "theme": "songya", "tags": ["信纸"], "size": [1080, 1600] }
+],
+
+  "portraits": [
+    { "file": "portrait/portrait-shengyayu.jpg",  "characterId": "char_shengyayu",  "size": [1080, 1920] },
+    { "file": "portrait/portrait-yewenzhou.jpg",  "characterId": "char_yewenzhou",  "size": [1080, 1920] },
+    { "file": "portrait/portrait-fangchengyi.jpg", "characterId": "char_fangchengyi", "size": [1080, 1920] },
+    { "file": "portrait/portrait-yanwugui.jpg",    "characterId": "char_yanwugui",    "size": [1080, 1920] }
+  ],
+
+  "avatars": [
+    { "file": "avatar/avatar-shengyayu.jpg",  "characterId": "char_shengyayu",  "size": [200, 200] },
+    { "file": "avatar/avatar-yewenzhou.jpg",  "characterId": "char_yewenzhou",  "size": [200, 200] },
+    { "file": "avatar/avatar-fangchengyi.jpg", "characterId": "char_fangchengyi", "size": [200, 200] },
+    { "file": "avatar/avatar-yanwugui.jpg",    "characterId": "char_yanwugui",    "size": [200, 200] }
+
+  ]
+}

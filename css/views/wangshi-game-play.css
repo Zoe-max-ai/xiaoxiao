@@ -1,0 +1,242 @@
+/* ========== 游玩页 ========== */
+
+.gameplay-topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px;
+  margin-bottom: 20px;
+}
+.gameplay-back {
+  background: none;
+  border: none;
+  color: var(--cinnabar);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px 12px 8px 0;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: left;
+}
+.gameplay-title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-title);
+  font-size: 15px;
+  letter-spacing: 3px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gameplay-more {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--ink-dim);
+  cursor: pointer;
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+.gameplay-more:hover { color: var(--cinnabar); }
+
+.gameplay-content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 4px;
+}
+
+.gameplay-text {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 2.2;
+  color: var(--ink);
+  letter-spacing: 1px;
+  margin-bottom: 40px;
+  word-break: break-word;
+}
+
+.gameplay-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gameplay-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--paper);
+  border: 1px solid var(--line-light);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+.gameplay-choice:hover {
+  border-color: var(--cinnabar);
+  background: var(--paper-soft);
+}
+.gameplay-choice-arrow {
+  color: var(--cinnabar);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.gameplay-choice-text {
+  flex: 1;
+}
+
+/* 结局 */
+.gameplay-ending {
+  text-align: center;
+  padding: 40px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* 让“完”和按钮之间有点距离 */
+}
+.gameplay-ending-mark {
+  font-family: var(--font-title);
+  font-size: 18px;
+  letter-spacing: 8px;
+  color: var(--cinnabar);
+  margin-bottom: 20px;
+}
+.gameplay-ending-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 2;
+  color: var(--ink-soft);
+  margin-bottom: 40px;
+  letter-spacing: 2px;
+}
+.gameplay-ending-actions {
+  display: flex;
+  gap: 12px;
+  max-width: 400px;
+  margin: 0 auto;
+white-space: nowrap;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 4px;
+}
+
+.game-grid-card {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.game-grid-card:hover {
+  transform: translateY(-2px);
+}
+
+.game-grid-cover {
+  position: relative;
+  aspect-ratio: 3/4;
+  border-radius: var(--radius);
+  background: var(--paper-soft);
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--line-light);
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+/* 没封面时显示默认图案 */
+.game-grid-cover:not([style*="background-image"])::after {
+  content: "书";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-title);
+  font-size: 32px;
+  color: var(--ink-dim);
+  opacity: 0.3;
+}
+
+.game-grid-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 8px;
+  background: var(--cinnabar);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.game-grid-title {
+  font-family: var(--font-title);
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--ink);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 👈 新增：正文宣纸卡片 */
+.gameplay-paper {
+  background: rgba(250, 246, 238, 0.85); /* 宣纸底色带透明度 */
+  backdrop-filter: blur(8px);            /* 毛玻璃效果 */
+  border-radius: 12px;
+  padding: 24px;
+  margin: 16px 20px 30px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--line-light);
+}
+
+.gameplay-paper .gameplay-text {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 2.2;
+  color: var(--ink);
+  letter-spacing: 1px;
+  text-align: justify;
+  margin-bottom: 0; /* 去掉原来的底边距 */
+}
+
+/* 👈 美化选项按钮（变成古风木牌） */
+.gameplay-choices {
+  padding: 0 20px;
+}
+
+.gameplay-choice {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: var(--font-title); /* 用古风字体 */
+  font-size: 15px;
+  color: var(--ink);
+  text-align: left;
+  transition: all 0.2s;
+  position: relative;
+  border-left: 4px solid var(--cinnabar); /* 左侧朱砂红装饰线 */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.gameplay-choice:hover {
+  background: var(--paper-soft);
+  transform: translateX(4px); /* 悬浮时微微右移 */
+}
+
+/* 把默认的箭头改成一个小小的水墨圆点 */
+.gameplay-choice-arrow {
+  color: var(--cinnabar);
+  font-size: 12px;
+  opacity: 0.7;
+}

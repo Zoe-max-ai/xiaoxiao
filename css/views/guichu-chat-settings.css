@@ -1,0 +1,102 @@
+/* =========================================
+ * 开关样式（防隐形增强版）
+ * ========================================= */
+.sw-toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: rgba(43, 43, 43, 0.25); /* 👈 加深未开启时的背景，防止在亮色背景上看不见 */
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.sw-toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px; /* 稍微改小一点点，为了容纳边框 */
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.sw-toggle.on {
+  background: var(--cinnabar);
+  border-color: var(--cinnabar);
+}
+
+.sw-toggle.on::after {
+  left: 20px;
+}
+
+/* =========================================
+ * 角色横栏
+ * ========================================= */
+.char-tab {
+  transition: border-color 0.2s;
+}
+
+.char-tab.on {
+  border-color: var(--cinnabar);
+}
+
+/* =========================================
+ * 分组项悬浮（字卡分组）
+ * ========================================= */
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+.group-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  /* 👈 加了一层宣纸半透明底和模糊，防止字看不清 */
+  background: rgba(250, 246, 238, 0.85); 
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line-light);
+  border-radius: 999px;
+  font-family: var(--font-title);
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--ink); /* 改用主色，更加清晰 */
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+
+.group-item:hover {
+  border-color: var(--cinnabar);
+  color: var(--cinnabar);
+  transform: translateY(-1px);
+}
+
+.group-item.on {
+  background: var(--cinnabar); /* 👈 背景变成主题强调色（青绿/朱砂红） */
+  color: #fff;
+  border-color: var(--cinnabar);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.group-count-on {
+  color: var(--gold); /* 👈 改成金色，在朱砂底上非常显眼；或者直接写 #fff */
+  font-weight: bold;
+}
+
+.settings-tab:active {
+  transform: scale(0.95);
+}

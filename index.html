@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="qinglv">
 <head>
+<script>
+  window.onerror = function(msg, url, line) {
+    document.body.innerHTML = `<div style="padding:20px; font-size:16px; background:white; color:black;">
+      <h3 style="color:red;">手机报错了：</h3>
+      <p>${msg}</p>
+      <p>文件: ${url}</p>
+      <p>行号: ${line}</p>
+    </div>`;
+  };
+</script>
 <base href="/xiaoxiao/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">

@@ -84,6 +84,11 @@ export async function tanmiView() {
     ${renderItem("music",   "音律", "#/tanmi/music")}
     ${renderItem("sign",    "抽签", "#/tanmi/sign")}
     ${renderItem("bagua",   "问易", "#/tanmi/bagua")}
+    
+    <!-- 👈 以下是新挪过来的三个入口，暂用其他图标代替 -->
+    ${renderItem("cards",   "书卷", "#/tanmi/books")}
+    ${renderItem("letters", "绘卷", "#/tanmi/gallery")}
+    ${renderItem("music",   "雅戏", "#/tanmi/games")}
   `;
   el.appendChild(grid);
 

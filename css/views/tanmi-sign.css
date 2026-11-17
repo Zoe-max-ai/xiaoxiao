@@ -3,27 +3,27 @@
 .sign-page {
   position: relative;
   min-height: calc(100dvh - 120px);
-  padding: 0 0 20px;   /* 顶部不留 padding */
+  padding: 0 0 20px;
   display: flex;
   flex-direction: column;
   font-family: var(--font-body);
+  align-items: center;
 }
-
-/* ========== 签筒 ========== */
+/* ========== 签筒区域 ========== */
 
 .sign-cylinder-wrap {
   position: relative;
-  width: 200px;
-  height: 360px;
+  width: 100px;
+  height: 260px; /* 👈 之前是 280px，改小一点，整体就会上移 */
   cursor: pointer;
   transition: transform 0.3s;
-  margin: 0 auto 20px;
   user-select: none;
-  align-self: center;
+  z-index: 2;
+  margin-bottom: 30px; /* 👈 新增：给签筒底部和分类按钮之间加上 30px 的距离 */
 }
 
 .sign-cylinder-wrap:hover {
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
 .sign-cylinder-wrap.shaking {
@@ -32,164 +32,214 @@
 
 @keyframes sign-shake {
   0%, 100% { transform: rotate(0); }
-  25% { transform: rotate(-5deg) translateX(-5px); }
-  50% { transform: rotate(5deg) translateX(5px); }
-  75% { transform: rotate(-3deg); }
+  25% { transform: rotate(-4deg) translateX(-4px); }
+  50% { transform: rotate(4deg) translateX(4px); }
+  75% { transform: rotate(-2deg); }
 }
 
-/* 签（从签筒口露出） */
+/* 签筒里的签 */
+/* 签筒里的签 */
 .sign-sticks {
   position: absolute;
-  bottom: 248px;
+  bottom: 190px;
   left: 50%;
   transform: translateX(-50%);
-  width: 140px;
+  width: 80px;
   height: 100px;
   pointer-events: none;
+  z-index: 1; /* 👈 改成 1 */
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
 }
 
+
+/* 竹签主体 */
 .sign-stick-base {
   position: absolute;
   bottom: 0;
-  width: 22px;
-  height: 100px;
-  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-soft) 100%);
-  border: 1px solid var(--gold);
-  border-radius: 3px 3px 0 0;
-  transform-origin: bottom center;
+  width: 12px; 
+  background: linear-gradient(180deg, #fefcf8 0%, #e8dcc8 100%);
+  border: 1px solid #c2b197;
+  border-radius: 6px 6px 0 0; 
+  transform-origin: bottom center; /* 👈 确保是以底部中心旋转 */
   box-shadow: 1px 0 3px rgba(0, 0, 0, 0.15);
 }
 
+/* 签头的红圈印记 */
 .sign-stick-base::before {
   content: "";
   position: absolute;
-  top: 8px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  width: 12px;
-  height: 12px;
-  border: 1px solid var(--gold);
-  opacity: 0.6;
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  width: 6px;
+  height: 6px;
+  background: rgba(138, 43, 43, 0.8); /* 朱砂红 */
+  border-radius: 50%;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
 }
 
-/* 签筒 */
+/* 签身底部的黑色“签文”小点 */
+.sign-stick-base::after {
+  content: "";
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 20px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #8a6d4b 0px,
+    #8a6d4b 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  opacity: 0.5;
+}
+/* 签筒主体（修身版） */
 .sign-cylinder {
   position: absolute;
   bottom: 0;
-  width: 100%;
-  height: 260px;
-  background: linear-gradient(135deg, var(--paper-soft) 0%, var(--paper) 50%, var(--paper-soft) 100%);
-  border: 2px solid var(--gold);
-  border-radius: 10px 10px 20px 20px;
-  box-shadow:
-    inset 0 0 30px rgba(0, 0, 0, 0.1),
-    0 10px 30px rgba(0, 0, 0, 0.15);
-  overflow: visible;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 86px;
+  height: 200px;
+  background: linear-gradient(90deg, #e3d5c1 0%, #f4ebd9 20%, #f4ebd9 80%, #e3d5c1 100%);
+  border: 1px solid #a88c6c;
+  clip-path: polygon(5% 0, 95% 0, 100% 100%, 0% 100%);
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5), 0 10px 20px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+  overflow: hidden; /* 👈 关键：把超出筒身的花纹裁掉 */
 }
 
-/* 筒口 */
+/* 筒口（竹节） */
 .sign-cylinder-top {
   position: absolute;
-  top: -15px;
-  left: -8px;
-  right: -8px;
-  height: 30px;
-  background: linear-gradient(180deg, var(--gold) 0%, var(--cinnabar) 50%, var(--gold) 100%);
-  border-radius: 50% 50% 5px 5px / 60% 60% 5px 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  opacity: 0.85;
+  top: -8px;
+  left: -2px;
+  right: -2px;
+  height: 16px;
+  background: #8a6d4b;
+  border-radius: 50% 50% 2px 2px / 100% 100% 2px 2px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  border: 1px solid #5a4430;
+  z-index: 5; /* 👈 改成 5 */
 }
 
-.sign-cylinder-top::after {
-  content: "";
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  right: 5px;
-  bottom: 5px;
-  border: 1px solid var(--paper);
-  border-radius: inherit;
-  opacity: 0.5;
-}
-
-/* 筒身 */
+/* 筒身上的竖线（淡化） */
 .sign-cylinder-body {
   position: absolute;
-  top: 30px;
-  left: 15px;
-  right: 15px;
-  bottom: 20px;
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background:
-    linear-gradient(90deg, transparent 48%, var(--line-light) 50%, transparent 52%),
-    linear-gradient(0deg, transparent 48%, var(--line-light) 50%, transparent 52%);
+  top: 10px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(90deg, 
+      transparent 20%, rgba(138,109,75,0.1) 20%, rgba(138,109,75,0.1) 21%, transparent 21%,
+      transparent 40%, rgba(138,109,75,0.1) 40%, rgba(138,109,75,0.1) 41%, transparent 41%,
+      transparent 60%, rgba(138,109,75,0.1) 60%, rgba(138,109,75,0.1) 61%, transparent 61%,
+      transparent 80%, rgba(138,109,75,0.1) 80%, rgba(138,109,75,0.1) 81%, transparent 81%
+    );
+  z-index: 1;
 }
 
-.sign-cylinder-char {
-  font-family: var(--font-title);
-  font-size: 72px;
-  color: var(--cinnabar);
-  opacity: 0.35;
-  letter-spacing: 0;
-  text-shadow: 0 0 20px rgba(138, 43, 43, 0.15);
-  user-select: none;
+/* 👈 新增：筒身的花纹素材 */
+.pattern-bamboo {
+  position: absolute;
+  bottom: -10px;
+  left: -20px;
+  width: 70px;
+  opacity: 0.25; /* 透明度调低，看起来像印上去的 */
+  z-index: 0;
   pointer-events: none;
-  font-weight: bold;
+}
+
+.pattern-crane {
+  position: absolute;
+  bottom: 0px;
+  right: -15px;
+  width: 65px;
+  opacity: 0.3; /* 透明度调低 */
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ========== 分类标签 ========== */
+.sign-categories {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  z-index: 10;
+}
+
+.sign-category-tab {
+  font-family: var(--font-title);
+  font-size: 13px;
+  color: var(--ink-dim);
+  padding: 6px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--line-light);
+  background: var(--paper);
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 2px;
+}
+
+.sign-category-tab.active {
+  background: var(--cinnabar);
+  color: #fff;
+  border-color: var(--cinnabar);
+  box-shadow: 0 4px 10px rgba(163, 51, 51, 0.2);
 }
 
 /* ========== 抽签按钮 ========== */
-
 .sign-draw-btn {
-  margin: 20px auto 24px;
-  padding: 12px 36px;
+  padding: 10px 40px;
   background: var(--cinnabar);
   border: none;
   color: var(--paper);
   font-family: var(--font-title);
   font-size: 15px;
-  letter-spacing: 6px;
+  letter-spacing: 4px;
   cursor: pointer;
   transition: all 0.3s;
-  border-radius: var(--radius-sm);
+  border-radius: 4px;
   align-self: center;
 }
 
-.sign-draw-btn:hover {
-  opacity: 0.9;
-}
+.sign-draw-btn:hover { opacity: 0.9; }
+.sign-draw-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.sign-draw-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+
+
 
 /* ========== 结果面板 ========== */
-
 .sign-result-panel {
-  width: 100%;
-  max-width: 420px;
-  padding: 24px 28px;
+  position: fixed; /* 👈 改成 fixed，悬浮在屏幕正中间 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9); /* 👈 居中 + 缩放动画 */
+  width: 85%;
+  max-width: 340px;
+  padding: 24px;
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 12px;
   text-align: center;
-  box-shadow: var(--shadow);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2); /* 👈 阴影加深，像弹窗 */
   cursor: pointer;
-  transition: all 0.4s;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   opacity: 0;
-  transform: translateY(20px);
   pointer-events: none;
-  align-self: center;
+  z-index: 999; /* 👈 层级拉满 */
 }
 
 .sign-result-panel.show {
   opacity: 1;
-  transform: translateY(0);
+  transform: translate(-50%, -50%) scale(1); /* 👈 弹出动画 */
   pointer-events: auto;
 }
 
@@ -203,7 +253,7 @@
 
 .sign-result-panel .poem {
   font-family: var(--font-title);
-  font-size: 17px;
+  font-size: 16px;
   line-height: 2;
   color: var(--ink);
   margin-bottom: 12px;
@@ -224,72 +274,13 @@
   letter-spacing: 2px;
 }
 
-/* ========== 弹出的签（动画） ========== */
 
-.sign-drawn-stick {
-  position: fixed;
-  width: 60px;
-  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-soft) 100%);
-  border: 1px solid var(--gold);
-  border-radius: 5px 5px 0 0;
-  padding: 15px 10px;
-  text-align: center;
-  color: var(--ink);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-  z-index: 100;
-  opacity: 0;
-  transform-origin: bottom center;
-  pointer-events: none;
-}
-
-.sign-drawn-stick .grade {
-  font-family: var(--font-title);
-  font-size: 24px;
-  font-weight: bold;
-  color: var(--cinnabar);
-  margin-bottom: 8px;
-  letter-spacing: 2px;
-}
-
-.sign-drawn-stick .text {
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--ink-soft);
-}
-
-@keyframes sign-stick-pop {
-  0% {
-    opacity: 0;
-    transform: translateY(0) rotate(0) scale(0.5);
-  }
-  20% {
-    opacity: 1;
-    transform: translateY(-80px) rotate(var(--rot, 0deg)) scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-180px) rotate(var(--rot, 0deg)) translateX(var(--drift, 0));
-  }
-  80% {
-    opacity: 1;
-    transform: translateY(-240px) rotate(var(--rot, 0deg)) translateX(var(--drift, 0));
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-300px) rotate(var(--rot, 0deg)) translateX(var(--drift, 0));
-  }
-}
-
-.sign-drawn-stick.popping {
-  animation: sign-stick-pop 1.6s ease-out forwards;
-}
 
 /* ========== 历史 ========== */
-
 .sign-history {
-  margin-top: 32px;
-  width: 100%;
-  max-width: 420px;
+  margin-top: 20px;
+  width: 90%;
+  max-width: 400px;
   align-self: center;
 }
 
@@ -302,67 +293,20 @@
   margin-bottom: 12px;
 }
 
-.sign-history-item {
+.history-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
-  background: var(--paper);
-  border: 1px solid var(--line-light);
-  border-radius: var(--radius-sm);
-  margin-bottom: 6px;
-  font-size: 13px;
-}
-
-.sign-history-item .h-grade {
-  color: var(--cinnabar);
-  font-family: var(--font-title);
-  letter-spacing: 2px;
-  flex-shrink: 0;
-}
-
-.sign-history-item .h-date {
-  color: var(--ink-dim);
-  font-size: 11px;
-  flex-shrink: 0;
-}
-
-.sign-history-item .h-poem {
-  flex: 1;
-  margin: 0 12px;
-  color: var(--ink-soft);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 12px;
-}
-
-.sign-history-item .h-del {
-  color: var(--ink-dim);
-  cursor: pointer;
-  font-size: 16px;
-  padding: 0 4px;
-  transition: color 0.2s;
-  flex-shrink: 0;
-  user-select: none;
-}
-
-/* ========== 历史记录通用卡片 ========== */
-.sign-history-item, .history-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 16px; /* 稍微加大一点内边距，看起来更舒服 */
+  padding: 14px 16px;
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: 8px; /* 圆角稍微大一点 */
-  margin-bottom: 12px; /* 间距加大 */
+  border-radius: 8px;
+  margin-bottom: 12px;
   font-size: 13px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02); /* 加点小阴影，质感更好 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
-/* 右侧的吉凶/卦名 */
-.sign-history-item .h-grade, .history-card .h-grade {
+.history-card .h-grade {
   color: var(--cinnabar);
   font-family: var(--font-title);
   letter-spacing: 2px;
@@ -370,15 +314,13 @@
   font-weight: bold;
 }
 
-/* 左侧日期 */
-.sign-history-item .h-date, .history-card .h-date {
+.history-card .h-date {
   color: var(--ink-dim);
   font-size: 12px;
   flex-shrink: 0;
 }
 
-/* 中间的文本 */
-.sign-history-item .h-poem, .history-card .h-poem {
+.history-card .h-poem {
   flex: 1;
   margin: 0 12px;
   color: var(--ink-soft);
@@ -388,8 +330,7 @@
   font-size: 13px;
 }
 
-/* 删除按钮 */
-.sign-history-item .h-del, .history-card .h-del {
+.history-card .h-del {
   color: var(--ink-dim);
   cursor: pointer;
   font-size: 18px;
@@ -398,7 +339,8 @@
   flex-shrink: 0;
   user-select: none;
 }
-.sign-history-item .h-del:hover, .history-card .h-del:hover {
+
+.history-card .h-del:hover {
   color: var(--cinnabar);
 }
 
@@ -406,4 +348,44 @@
   width: 100%;
   align-self: stretch;
   margin-bottom: 8px;
+}
+
+/* 👈 弹出的细竹签（替换原来粗大的木牌） */
+.sign-flying-stick {
+  position: fixed;
+  width: 10px;
+  height: 90px;
+  background: linear-gradient(180deg, #fefcf8 0%, #e8dcc8 100%);
+  border: 1px solid #c2b197;
+  border-radius: 5px 5px 0 0;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  opacity: 0;
+  transform-origin: bottom center;
+  pointer-events: none;
+}
+
+/* 细签头部的红圈 */
+.sign-flying-stick .stick-head {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: rgba(138, 43, 43, 0.8);
+  border-radius: 50%;
+}
+
+/* 细签飞出的动画 */
+@keyframes flying-stick-pop {
+  0% { opacity: 0; transform: translateY(0) rotate(0) scale(0.5); }
+  20% { opacity: 1; transform: translateY(-80px) rotate(var(--rot, 0deg)) scale(1); }
+  50% { opacity: 1; transform: translateY(-180px) rotate(var(--rot, 0deg)) translateX(var(--drift, 0)); }
+  80% { opacity: 1; transform: translateY(-240px) rotate(var(--rot, 0deg)) translateX(var(--drift, 0)); }
+  100% { opacity: 0; transform: translateY(-300px) rotate(var(--rot, 0deg)) translateX(var(--drift, 0)); }
+}
+
+.sign-flying-stick.popping {
+  animation: flying-stick-pop 1.6s ease-out forwards;
 }

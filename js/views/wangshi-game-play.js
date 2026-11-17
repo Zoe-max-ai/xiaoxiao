@@ -3,6 +3,7 @@ import { showConfirm } from "../ui/confirm.js";
 import { state } from "../core/state.js";
 import { db } from "../core/db.js";
 import { uid } from "../core/uid.js";
+import { getImageUrl } from "../services/seed-service.js";
 import {
   getGame, updateGame, getNode, getNodesByGame, getChaptersByGame,
   getSaveByGame, saveGame, deleteSaveByGame,
@@ -13,12 +14,12 @@ import { addRelation } from "../services/relation-service.js";
 export async function wangshiGamePlayView({ params }) {
   const el = document.createElement("div");
   const ownerId = state.currentUserId;
+
   if (!ownerId) {
     el.innerHTML = `<div class="empty-state">请先创建身份。</div>`;
     return el;
   }
 
-  // 👈 核心修复：切掉问号后面的参数，拿到纯净的游戏 ID
   const rawId = params?.[0] || "";
   const gameId = rawId.split('?')[0];
 
@@ -28,12 +29,12 @@ export async function wangshiGamePlayView({ params }) {
   }
 
   const game = await getGame(gameId);
+
   if (!game) {
     el.innerHTML = `<div class="empty-state">游戏不存在。</div>`;
     return el;
   }
 
-  // 👈 核心修复：直接从整个哈希里正则抓取 node 参数
   const hashMatch = window.location.hash.match(/node=([^&]+)/);
   const targetNodeId = hashMatch ? hashMatch[1] : null;
 
@@ -44,9 +45,9 @@ export async function wangshiGamePlayView({ params }) {
   let save = await getSaveByGame(ownerId, game.id);
 
   /* ===== 开始 / 继续 选择 ===== */
-  // 👈 加一个判断：如果是点击收藏跳过来的，就直接跳过弹窗
   if (save && save.currentNodeId && !targetNodeId) {
     const { showModal, closeModal } = await import("../ui/modal.js");
+
     const modal = showModal(`
       <div style="text-align:center;font-family:var(--font-title);font-size:16px;color:var(--cinnabar);letter-spacing:4px;margin-bottom:20px;">
         ${escapeHtml(game.title)}
@@ -70,7 +71,6 @@ export async function wangshiGamePlayView({ params }) {
 
   /* ===== 初始化存档 ===== */
   if (targetNodeId) {
-    // 👈 核心逻辑：如果 URL 里指定了节点，强制把存档改成那个节点
     save = await saveGame(ownerId, game.id, {
       currentNodeId: targetNodeId,
       visitedNodeIds: save?.visitedNodeIds || [targetNodeId],
@@ -78,15 +78,16 @@ export async function wangshiGamePlayView({ params }) {
       relationChanges: save?.relationChanges || {},
       manualSave: save?.manualSave || null,
     });
-    // 顺便把 URL 里的 ?node= 擦掉，防止用户刷新页面卡在这个节点
+
     history.replaceState(null, "", `#/wangshi/game/play/${game.id}`);
   } else if (!save || !save.currentNodeId) {
-    // 原版的初始化逻辑
     const startNodeId = game.startNodeId || allNodes[0]?.id;
+
     if (!startNodeId) {
       el.innerHTML = `<div class="empty-state">游戏没有开始节点。</div>`;
       return el;
     }
+
     save = await saveGame(ownerId, game.id, {
       currentNodeId: startNodeId,
       visitedNodeIds: [startNodeId],
@@ -102,15 +103,31 @@ export async function wangshiGamePlayView({ params }) {
   el.innerHTML = `
     <div class="gameplay-topbar">
       <button class="gameplay-back" id="btn-back">←</button>
-      <div class="gameplay-title">${escapeHtml(game.title)}</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div id="play-game-cover" style="width:32px;height:40px;border-radius:4px;overflow:hidden;"></div>
+        <div class="gameplay-title">${escapeHtml(game.title)}</div>
+      </div>
       <button class="gameplay-more" id="btn-more" title="更多">⋯</button>
     </div>
-
     <div class="gameplay-content" id="play-content"></div>
   `;
 
   el.querySelector("#btn-back").onclick = () => { location.hash = "#/wangshi"; };
   el.querySelector("#btn-more").onclick = () => openMoreMenu();
+
+  /* ===== 加载顶部游戏封面：有图才显示，没图就隐藏 ===== */
+const coverEl = el.querySelector("#play-game-cover");
+const rawCoverId = game.coverImageId;
+console.log("【游玩页】传给getImageUrl的coverImageId =", rawCoverId); // 新增！
+const coverSrc = await getImageUrl(rawCoverId, false);
+console.log("【游玩页】getImageUrl返回结果 coverSrc =", coverSrc); // 新增！
+
+
+  if (coverSrc) {
+    coverEl.innerHTML = `<img src="${coverSrc}" style="width:100%;height:100%;object-fit:cover;">`;
+  } else {
+    coverEl.style.display = "none";
+  }
 
   /* ===== 渲染当前节点 ===== */
   async function renderNode() {
@@ -122,24 +139,40 @@ export async function wangshiGamePlayView({ params }) {
     const isEnding = !currentNode.choices || currentNode.choices.length === 0;
     const contentEl = el.querySelector("#play-content");
 
-    // 进入结局节点时，触发「进入时效果」——触发一次
     if (isEnding && currentNode.enterEffects) {
       const enterKey = `enter_${currentNode.id}`;
       const triggered = game.triggeredChoices || {};
+
       if (!triggered[enterKey]) {
         await triggerEnterEffects(currentNode.enterEffects);
+
         if (!game.triggeredChoices) game.triggeredChoices = {};
         game.triggeredChoices[enterKey] = true;
+
         await updateGame(game.id, { triggeredChoices: game.triggeredChoices });
       }
     }
 
+    /* ===== 节点配图：统一走 getImageUrl ===== */
+    let nodeImageHtml = "";
+    const nodeImgSrc = await getImageUrl(currentNode.imageId, true);
+
+    if (nodeImgSrc) {
+      nodeImageHtml = `
+        <div class="gameplay-node-img" style="margin-bottom:16px;text-align:center;">
+          <img src="${nodeImgSrc}" style="max-width:100%;max-height:280px;border-radius:8px;object-fit:contain;">
+        </div>
+      `;
+    }
+
     contentEl.innerHTML = `
       <div class="gameplay-paper">
+        ${nodeImageHtml}
         <div class="gameplay-text" id="typewriter-text"></div>
       </div>
-
-      ${isEnding ? `
+      ${
+        isEnding
+          ? `
         <div class="gameplay-ending" id="ending-wrap" style="opacity: 0; transition: opacity 0.8s ease; margin-top: 20px;">
           <div class="gameplay-ending-mark">—— 完 ——</div>
           ${currentNode.endingText ? `<div class="gameplay-ending-text">${escapeHtml(currentNode.endingText)}</div>` : ""}
@@ -148,19 +181,24 @@ export async function wangshiGamePlayView({ params }) {
             <button class="btn" id="btn-home" style="flex:1;padding:12px;letter-spacing:3px;white-space:nowrap;">回 到 往 事</button>
           </div>
         </div>
-      ` : `
+      `
+          : `
         <div class="gameplay-choices">
-          ${currentNode.choices.map((c, i) => `
+          ${currentNode.choices
+            .map(
+              (c, i) => `
             <button class="gameplay-choice" data-idx="${i}">
               <span class="gameplay-choice-arrow">›</span>
               <span class="gameplay-choice-text">${escapeHtml(c.text || "……")}</span>
             </button>
-          `).join("")}
+          `
+            )
+            .join("")}
         </div>
-      `}
+      `
+      }
     `;
 
-    // 👈 打字机效果
     const textEl = contentEl.querySelector("#typewriter-text");
     const choicesEl = contentEl.querySelector(".gameplay-choices");
     const endingWrap = contentEl.querySelector("#ending-wrap");
@@ -186,13 +224,12 @@ export async function wangshiGamePlayView({ params }) {
         }
         setTimeout(typeWriter, 35);
       } else {
-        // 👈 核心：打完后浮现
         if (choicesEl) choicesEl.style.opacity = "1";
-        if (endingWrap) endingWrap.style.opacity = "1"; // 结局的完和按钮浮现
+        if (endingWrap) endingWrap.style.opacity = "1";
       }
     }
-    typeWriter();
 
+    typeWriter();
 
     contentEl.querySelectorAll(".gameplay-choice").forEach(btn => {
       btn.onclick = () => {
@@ -221,7 +258,6 @@ export async function wangshiGamePlayView({ params }) {
   async function triggerEnterEffects(eff) {
     if (!eff) return;
 
-    // 数值
     if (eff.targetCharacterId && ((eff.affection || 0) !== 0 || (eff.friendship || 0) !== 0)) {
       await addRelation(ownerId, eff.targetCharacterId, {
         affection: eff.affection || 0,
@@ -232,20 +268,24 @@ export async function wangshiGamePlayView({ params }) {
 
       const character = await db.get("characters", eff.targetCharacterId);
       const parts = [];
+
       if (eff.affection) parts.push(`爱慕 +${eff.affection}`);
       if (eff.friendship) parts.push(`友善 +${eff.friendship}`);
+
       if (parts.length) {
         showToast(`${character?.name || ""} ${parts.join(" · ")}`);
       }
     }
 
-    // 副作用
     if (eff.targetCharacterId) {
-      await triggerEffects({
-        letter: eff.letter,
-        post: eff.post,
-        chat: eff.chat,
-      }, eff.targetCharacterId);
+      await triggerEffects(
+        {
+          letter: eff.letter,
+          post: eff.post,
+          chat: eff.chat,
+        },
+        eff.targetCharacterId
+      );
     }
   }
 
@@ -254,12 +294,10 @@ export async function wangshiGamePlayView({ params }) {
     const choice = currentNode.choices[idx];
     if (!choice) return;
 
-    // 触发一次判断
     const triggerKey = `${currentNode.id}_${idx}`;
     if (!game.triggeredChoices) game.triggeredChoices = {};
     const hasTriggered = game.triggeredChoices[triggerKey];
 
-    // 1. 数值变化（只加一次）
     if (!hasTriggered && choice.targetCharacterId && ((choice.affection || 0) !== 0 || (choice.friendship || 0) !== 0)) {
       await addRelation(ownerId, choice.targetCharacterId, {
         affection: choice.affection || 0,
@@ -270,8 +308,10 @@ export async function wangshiGamePlayView({ params }) {
 
       const character = await db.get("characters", choice.targetCharacterId);
       const parts = [];
+
       if (choice.affection) parts.push(`爱慕 +${choice.affection}`);
       if (choice.friendship) parts.push(`友善 +${choice.friendship}`);
+
       if (parts.length) {
         showToast(`${character?.name || ""} ${parts.join(" · ")}`);
       }
@@ -280,44 +320,45 @@ export async function wangshiGamePlayView({ params }) {
       if (!save.relationChanges[choice.targetCharacterId]) {
         save.relationChanges[choice.targetCharacterId] = { affection: 0, friendship: 0 };
       }
+
       save.relationChanges[choice.targetCharacterId].affection += choice.affection || 0;
       save.relationChanges[choice.targetCharacterId].friendship += choice.friendship || 0;
     }
 
-    // 2. 副作用（只触发一次）
     if (!hasTriggered && choice.effects) {
       await triggerEffects(choice.effects, choice.targetCharacterId);
     }
 
-    // 3. 标记已触发
     if (!hasTriggered) {
       game.triggeredChoices[triggerKey] = true;
       await updateGame(game.id, { triggeredChoices: game.triggeredChoices });
     }
 
-    // 4. 跳转 / 结局
     if (choice.nextNodeId) {
       const nextNode = await getNode(choice.nextNodeId);
       if (!nextNode) {
         showToast("目标节点不存在");
         return;
       }
+
       currentNode = nextNode;
       save.currentNodeId = nextNode.id;
+
       if (!save.visitedNodeIds) save.visitedNodeIds = [];
       if (!save.visitedNodeIds.includes(nextNode.id)) {
         save.visitedNodeIds.push(nextNode.id);
       }
+
       save.choiceHistory = save.choiceHistory || [];
       save.choiceHistory.push({
         nodeId: currentNode.id,
         choiceIdx: idx,
         at: Date.now(),
       });
+
       await saveGame(ownerId, game.id, save);
       await renderNode();
     } else {
-      // 结局
       save.currentNodeId = null;
       await saveGame(ownerId, game.id, save);
       await renderEnding(choice);
@@ -329,13 +370,24 @@ export async function wangshiGamePlayView({ params }) {
     const contentEl = el.querySelector("#play-content");
     const endingText = choice.endingText || currentNode.endingText || "";
 
-    // 这里给外层加个 flex 布局，防止按钮被挤变形
+    /* ===== 结局节点配图：统一走 getImageUrl ===== */
+    let endingNodeImageHtml = "";
+    const endingImgSrc = await getImageUrl(currentNode.imageId, true);
+
+    if (endingImgSrc) {
+      endingNodeImageHtml = `
+        <div class="gameplay-node-img" style="margin-bottom:16px;text-align:center;">
+          <img src="${endingImgSrc}" style="max-width:100%;max-height:280px;border-radius:8px;object-fit:contain;">
+        </div>
+      `;
+    }
+
     contentEl.innerHTML = `
       <div style="display: flex; flex-direction: column; min-height: 70vh; justify-content: flex-start;">
         <div class="gameplay-paper">
+          ${endingNodeImageHtml}
           <div class="gameplay-text" id="ending-typewriter-text"></div>
         </div>
-        
         <div class="gameplay-ending" id="ending-wrap" style="opacity: 0; transition: opacity 0.8s ease; margin-top: auto; padding-bottom: 20px;">
           <div class="gameplay-ending-mark">—— 完 ——</div>
           <div class="gameplay-ending-actions" style="display: flex; gap: 12px;">
@@ -346,10 +398,9 @@ export async function wangshiGamePlayView({ params }) {
       </div>
     `;
 
-    // 👈 结局的打字机效果
     const textEl = contentEl.querySelector("#ending-typewriter-text");
     const endingWrap = contentEl.querySelector("#ending-wrap");
-    // 如果 choice 有 endingText 就优先用它，没有就用当前节点的正文
+
     const fullText = (endingText || currentNode.content).replace(/\n/g, "<br>");
     let charIdx = 0;
     textEl.innerHTML = "";
@@ -366,12 +417,12 @@ export async function wangshiGamePlayView({ params }) {
         }
         setTimeout(typeEnding, 35);
       } else {
-        // 👈 核心：打完后，把“完”和按钮优雅地浮现出来
         if (endingWrap) {
           endingWrap.style.opacity = "1";
         }
       }
     }
+
     typeEnding();
 
     contentEl.querySelector("#btn-home").onclick = () => { location.hash = "#/wangshi"; };
@@ -385,17 +436,16 @@ export async function wangshiGamePlayView({ params }) {
     window.scrollTo(0, 0);
   }
 
-
   /* ===== 副作用触发（立即） ===== */
   async function triggerEffects(effects, charId) {
     if (!charId) return;
+
     const character = await db.get("characters", charId);
     if (!character) return;
 
     const user = state.currentUser;
     const salutation = user?.nickname || user?.name || "君";
 
-    // 信
     if (effects.letter?.enabled && effects.letter.content) {
       const fullContent = [
         `${salutation} 敬启：`,
@@ -416,10 +466,10 @@ export async function wangshiGamePlayView({ params }) {
         isRead: false,
         createdAt: Date.now(),
       });
+
       showToast(`${character.name} 给你写了一封信`);
     }
 
-    // 心绪
     if (effects.post?.enabled && effects.post.content) {
       await db.put("posts", {
         id: uid("post"),
@@ -434,13 +484,14 @@ export async function wangshiGamePlayView({ params }) {
         commentCount: 0,
         createdAt: Date.now(),
       });
+
       showToast(`${character.name} 发表了一篇心绪`);
     }
 
-    // 聊天
     if (effects.chat?.enabled && effects.chat.content) {
       const chats = await db.all("chats");
       let chat = chats.find(c => c.ownerId === ownerId && c.characterId === charId);
+
       if (!chat) {
         chat = {
           id: uid("chat"),
@@ -452,8 +503,10 @@ export async function wangshiGamePlayView({ params }) {
           lastMessageFrom: charId,
           createdAt: Date.now(),
         };
+
         await db.put("chats", chat);
       }
+
       await db.put("messages", {
         id: uid("msg"),
         chatId: chat.id,
@@ -466,9 +519,11 @@ export async function wangshiGamePlayView({ params }) {
         isRead: false,
         createdAt: Date.now(),
       });
+
       chat.lastMessageAt = Date.now();
       chat.lastMessageText = effects.chat.content;
       chat.lastMessageFrom = charId;
+
       await db.put("chats", chat);
 
       showToast(`${character.name} 给你发了一条消息`);
@@ -478,6 +533,7 @@ export async function wangshiGamePlayView({ params }) {
   /* ===== 「⋯」菜单 ===== */
   async function openMoreMenu() {
     const { showModal, closeModal } = await import("../ui/modal.js");
+
     const fav = await isFavorite(ownerId, game.id, currentNode?.id);
     const hasManualSave = !!save.manualSave;
 
@@ -509,6 +565,7 @@ export async function wangshiGamePlayView({ params }) {
 
     modal.querySelector("[data-act='save']").onclick = async () => {
       closeModal(modal);
+
       await saveGame(ownerId, game.id, {
         manualSave: {
           currentNodeId: save.currentNodeId,
@@ -518,7 +575,7 @@ export async function wangshiGamePlayView({ params }) {
           savedAt: Date.now(),
         },
       });
-      // 重新拉 save（保证本地 save 也更新）
+
       save = await getSaveByGame(ownerId, game.id);
       showToast("已手动存档");
     };
@@ -527,15 +584,19 @@ export async function wangshiGamePlayView({ params }) {
     if (loadBtn) {
       loadBtn.onclick = async () => {
         closeModal(modal);
+
         if (!save.manualSave) return;
+
         await saveGame(ownerId, game.id, {
           currentNodeId: save.manualSave.currentNodeId,
           visitedNodeIds: JSON.parse(JSON.stringify(save.manualSave.visitedNodeIds || [])),
           choiceHistory: JSON.parse(JSON.stringify(save.manualSave.choiceHistory || [])),
           relationChanges: JSON.parse(JSON.stringify(save.manualSave.relationChanges || {})),
         });
+
         save = await getSaveByGame(ownerId, game.id);
         currentNode = await getNode(save.currentNodeId);
+
         showToast("已读取手动存档");
         await renderNode();
       };
@@ -548,7 +609,9 @@ export async function wangshiGamePlayView({ params }) {
 
     modal.querySelector("[data-act='fav']").onclick = async () => {
       closeModal(modal);
+
       if (!currentNode) return;
+
       if (fav) {
         await removeFavorite(ownerId, game.id, currentNode.id);
         showToast("已取消收藏");
@@ -560,8 +623,10 @@ export async function wangshiGamePlayView({ params }) {
 
     modal.querySelector("[data-act='reset']").onclick = async () => {
       closeModal(modal);
+
       const ok = await showConfirm("重刷剧情", "清空进度，从头开始？");
       if (!ok) return;
+
       await deleteSaveByGame(ownerId, game.id);
       location.reload();
     };
@@ -575,16 +640,20 @@ export async function wangshiGamePlayView({ params }) {
   /* ===== 回溯上一章 ===== */
   async function rewindChapter() {
     if (!currentNode) return;
+
     const curChapterId = currentNode.chapterId;
     const idx = chapters.findIndex(c => c.id === curChapterId);
+
     if (idx <= 0) {
       showToast("已是第一章");
       return;
     }
+
     const prevChapter = chapters[idx - 1];
     const prevChapterNodes = allNodes
       .filter(n => n.chapterId === prevChapter.id)
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
     if (!prevChapterNodes.length) {
       showToast("上一章没有节点");
       return;
@@ -599,6 +668,7 @@ export async function wangshiGamePlayView({ params }) {
 
     currentNode = targetNode;
     save.currentNodeId = targetNode.id;
+
     await saveGame(ownerId, game.id, save);
 
     showToast(`已回溯到「${prevChapter.title}」`);
@@ -618,6 +688,7 @@ export async function wangshiGamePlayView({ params }) {
         </div>
       </div>
     `;
+
     el.querySelector("#btn-home").onclick = () => { location.hash = "#/wangshi"; };
     el.querySelector("#btn-rewind-ending").onclick = async () => {
       await deleteSaveByGame(ownerId, game.id);
@@ -630,6 +701,10 @@ export async function wangshiGamePlayView({ params }) {
 
 function escapeHtml(str) {
   return String(str || "").replace(/[&<>"']/g, s => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
   }[s]));
 }

@@ -3,17 +3,14 @@ import { showToast } from "../ui/toast.js";
 import { openImagePicker } from "../ui/image-picker.js";
 import { showCropModal } from "../ui/image-cropper.js";
 import { db } from "../core/db.js";
-
 export async function tanmiView() {
   const el = document.createElement("div");
-
   // ===== 👈 顶部视觉主卡片 =====
   const savedCover = localStorage.getItem("tanmi_cover_url");
   // 如果没有选过图，默认给一个极美的浅青绿渐变底色
-  const defaultBg = savedCover 
-    ? `url('${savedCover}')` 
+  const defaultBg = savedCover
+    ? `url('${savedCover}')`
     : 'linear-gradient(135deg, #e8f0ec 0%, #b4cac1 100%)';
-
   const heroCard = document.createElement("div");
   heroCard.style.cssText = `
     position: relative;
@@ -27,7 +24,7 @@ export async function tanmiView() {
     background-size: cover;
     background-position: center;
   `;
-  
+
   heroCard.innerHTML = `
     <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 35%); pointer-events: none;"></div>
     
@@ -39,43 +36,49 @@ export async function tanmiView() {
       </p>
     </div>
   `;
-
   el.appendChild(heroCard);
-  
-  // 👈 绑定点击，从绘卷选择「插画」并裁剪
+
+  // 👈 绑定点击，从绘卷选择「插画」并裁剪（对齐往事写法）
   heroCard.onclick = () => {
     openImagePicker("illustration", async (imgId) => {
       const img = await db.get("images", imgId);
-      if (img && img.origin && img.origin.data instanceof Blob) {
+      if (!img || !img.origin?.data) {
+        showToast("图片数据异常");
+        return;
+      }
+      let src;
+      if (img.origin.data instanceof Blob) {
         const reader = new FileReader();
-        reader.onload = async (event) => {
-          const base64Url = event.target.result;
-          
-          // 调用公用的裁剪组件
-          showCropModal(base64Url, (croppedBase64) => {
-            heroCard.style.backgroundImage = `url('${croppedBase64}')`;
-            try {
-              localStorage.setItem("tanmi_cover_url", croppedBase64);
-              showToast("探秘封面已更换");
-            } catch (err) {
-              showToast("图片太大，请换一张");
-            }
-          });
+        reader.onload = (event) => {
+          runCrop(event.target.result);
         };
         reader.readAsDataURL(img.origin.data);
+      } else {
+        src = img.origin.data;
+        runCrop(src);
+      }
+      function runCrop(imageSrc) {
+        showCropModal(imageSrc, (croppedBase64) => {
+          heroCard.style.backgroundImage = `url('${croppedBase64}')`;
+          try {
+            localStorage.setItem("tanmi_cover_url", croppedBase64);
+            showToast("探秘封面已更换");
+          } catch (err) {
+            showToast("图片太大，请换一张");
+          }
+        });
       }
     });
   };
-
   // 九宫格容器
   const grid = document.createElement("div");
   grid.style.cssText = `
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px 12px;
-    margin-top: 16px;     
+    margin-top: 16px;
     padding: 0 20px;
-    box-sizing: border-box; 
+    box-sizing: border-box;
   `;
   grid.innerHTML = `
     ${renderItem("cards",   "笺语", "#/tanmi/cards")}
@@ -91,10 +94,8 @@ export async function tanmiView() {
     ${renderItem("music",   "雅戏", "#/tanmi/games")}
   `;
   el.appendChild(grid);
-
   return el;
 }
-
 function renderItem(iconName, label, href) {
   return `
     <a href="${href}" style="
@@ -117,7 +118,7 @@ function renderItem(iconName, label, href) {
         font-size: 14px;
         letter-spacing: 4px;
         color: var(--ink);
-        text-shadow: 0 0 4px rgba(255, 255, 255, 0.95), 0 0 8px rgba(255, 255, 255, 0.8);
+        text-shadow: 0 0 4px rgba(255,255,255,0.95), 0 0 8px rgba(255,255,255,0.8);
         font-weight: 600;
       ">${label}</span>
     </a>

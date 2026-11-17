@@ -38,17 +38,18 @@ export async function guichuGamesPlayView({ params }) {
     return el;
   }
 
-  let qAvatarUrl = null;
-  if (character?.qAvatarId) {
-    const img = await db.get("images", character.qAvatarId);
-    if (img?.origin?.data) qAvatarUrl = URL.createObjectURL(img.origin.data);
-  } else if (charId === "solo") {
-    const soloQId = localStorage.getItem(`solo_qavatar_${ownerId}`);
-    if (soloQId) {
-      const img = await db.get("images", soloQId);
-      if (img?.origin?.data) qAvatarUrl = URL.createObjectURL(img.origin.data);
-    }
+let qAvatarUrl = null;
+if (character?.qAvatarId) {
+  const img = await db.get("images", character.qAvatarId);
+  if (img?.origin?.data) qAvatarUrl = img.origin.data;
+} else if (charId === "solo") {
+  const soloQId = localStorage.getItem(`solo_qavatar_${ownerId}`);
+  if (soloQId) {
+    const img = await db.get("images", soloQId);
+    if (img?.origin?.data) qAvatarUrl = img.origin.data;
   }
+}
+
 
   el.innerHTML = `
     <!-- 顶部导航 -->
@@ -89,19 +90,54 @@ export async function guichuGamesPlayView({ params }) {
   const controlsEl = el.querySelector("#game-controls");
 
   // Q版上传
-  el.querySelector("#btn-upload-q").onclick = (e) => {
+el.querySelector("#btn-upload-q").onclick = (e) => {
+  e.stopPropagation();
+  openImagePicker("qavatar", async (imgId) => {
+    const img = await db.get("images", imgId);
+    if (img && img.origin && img.origin.data) {
+      const url = img.origin.data;
+      const box = el.querySelector("#q-avatar-box");
+      // 重绘头像+加号，但是【事件委托】不再直接绑onclick在加号上
+      box.innerHTML = `
+        <img src="${url}" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2));">
+        <div class="q-upload-btn" style="position: absolute; bottom: 0px; right: 0px; width: 22px; height: 22px; background: var(--paper-soft); border: 1px solid var(--cinnabar); color: var(--cinnabar); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 2;">+</div>
+      `;
+      // 保存图片ID，存入角色/本地存储
+      if (character) {
+        character.qAvatarId = imgId;
+        await db.put("characters", character);
+      } else {
+        localStorage.setItem(`solo_qavatar_${ownerId}`, imgId);
+      }
+      showToast("Q版已更新");
+    }
+  });
+};
+// ✅ 全局事件委托，绑定在box上，不管里面的加号怎么刷新，永远能点
+const box = el.querySelector("#q-avatar-box");
+box.addEventListener("click", (e) => {
+  if (e.target.classList.contains("q-upload-btn")) {
     e.stopPropagation();
     openImagePicker("qavatar", async (imgId) => {
       const img = await db.get("images", imgId);
-      if (img?.origin?.data) {
-        const url = URL.createObjectURL(img.origin.data);
-        el.querySelector("#q-avatar-box").innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2));"><div id="btn-upload-q" style="position: absolute; bottom: 0px; right: 0px; width: 22px; height: 22px; background: var(--paper-soft); border: 1px solid var(--cinnabar); color: var(--cinnabar); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 2;">+</div>`;
-        if (character) { character.qAvatarId = imgId; await db.put("characters", character); } 
-        else { localStorage.setItem(`solo_qavatar_${ownerId}`, imgId); }
+      if (img && img.origin && img.origin.data) {
+        const url = img.origin.data;
+        box.innerHTML = `
+          <img src="${url}" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2));">
+          <div class="q-upload-btn" style="position: absolute; bottom: 0px; right: 0px; width: 22px; height: 22px; background: var(--paper-soft); border: 1px solid var(--cinnabar); color: var(--cinnabar); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 2;">+</div>
+        `;
+        if (character) {
+          character.qAvatarId = imgId;
+          await db.put("characters", character);
+        } else {
+          localStorage.setItem(`solo_qavatar_${ownerId}`, imgId);
+        }
         showToast("Q版已更新");
       }
     });
-  };
+  }
+});
+
 
   // 👈 通用结算弹窗
   // 👈 加上 async

@@ -12,10 +12,10 @@ import {
 } from "../services/book-service.js";
 import { showCropModal } from "../ui/image-cropper.js";
 import { openImagePicker } from "../ui/image-picker.js";
+import { getAllImages } from "../services/image-service.js";
 
 /* ========== SVG 图标 ========== */
 const ICON_EDIT = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3 L18 7 L8 17 L3 20 L6 15 Z"/><path d="M14 3 L18 7" opacity="0.5"/><path d="M3 20 L6 15" opacity="0.5"/></svg>`;
-
 export async function guichuBooksView() {
   const el = document.createElement("div");
   const ownerId = state.currentUserId;
@@ -23,23 +23,19 @@ export async function guichuBooksView() {
     el.innerHTML = `<div class="empty-state">请先创建身份。</div>`;
     return el;
   }
-
   // 拿所有角色
   const chars = (await db.all("characters"))
     .filter(c => c.ownerId === ownerId)
     .sort((a, b) => a.createdAt - b.createdAt);
-
   if (!chars.length) {
     el.innerHTML = `<div class="empty-state">还没有角色。</div>`;
     return el;
   }
-
   let currentCharId = chars[0].id;
   let currentBook = null;
   let currentCategories = [];
   let currentCategoryId = null;
   let currentChapters = [];
-
   /* ===== HTML 框架 ===== */
   el.innerHTML = `
     <div class="books-topbar">
@@ -58,22 +54,17 @@ export async function guichuBooksView() {
 </div>
       <button class="books-edit-btn" id="btn-edit" title="编辑">${ICON_EDIT}</button>
     </div>
-
     <div id="books-content"></div>
   `;
-
   const contentEl = el.querySelector("#books-content");
-
   /* ===== 顶栏事件 ===== */
   el.querySelector("#btn-back").onclick = () => { location.hash = "#/tanmi"; };
 const switchEl = el.querySelector("#char-switch");
 const dropdownEl = el.querySelector("#char-dropdown");
-
 switchEl.onclick = (e) => {
   e.stopPropagation();
   dropdownEl.classList.toggle("open");
 };
-
 // 点选项
 dropdownEl.querySelectorAll(".books-char-option").forEach(opt => {
   opt.onclick = (e) => {
@@ -93,21 +84,16 @@ dropdownEl.querySelectorAll(".books-char-option").forEach(opt => {
     loadAndRender();
   };
 });
-
 // 点外部关闭
 document.addEventListener("click", () => {
   dropdownEl.classList.remove("open");
 });
   el.querySelector("#btn-edit").onclick = () => openEditMenu();
-
-
-
   /* ===== 加载 + 渲染 ===== */
   async function loadAndRender() {
     // 确保这本书存在（幂等）
     const char = chars.find(c => c.id === currentCharId);
     currentBook = await ensureBook(ownerId, currentCharId, char.name);
-
     currentCategories = await getCategoriesByBook(currentBook.id);
     if (!currentCategoryId || !currentCategories.find(c => c.id === currentCategoryId)) {
       currentCategoryId = currentCategories[0]?.id || null;
@@ -115,7 +101,6 @@ document.addEventListener("click", () => {
     await loadChapters();
     renderContent();
   }
-
   async function loadChapters() {
     if (!currentCategoryId) {
       currentChapters = [];
@@ -129,7 +114,6 @@ document.addEventListener("click", () => {
       currentChapters = await getChaptersByCategory(currentCategoryId);
     }
   }
-
   function renderContent() {
     const sections = [
       { id: "main", title: "主线", desc: "长风破浪，踏雪寻梅。主线剧情绘卷。", icon: "卷", key: "main" },
@@ -137,7 +121,6 @@ document.addEventListener("click", () => {
       { id: "fate", title: "因缘", desc: "红尘千丈，唯有一人。羁绊与因缘际会。", icon: "缘", key: "fate" },
       { id: "fav", title: "收藏", desc: "奇文共赏，疑义相析。珍藏的片段。", icon: "藏", key: "fav" }
     ];
-
     contentEl.innerHTML = `
       <div class="books-timeline">
         ${sections.map((sec, i) => {
@@ -146,19 +129,16 @@ document.addEventListener("click", () => {
           
           // 读取本地缓存的 Base64 图片
           const savedImgBase64 = localStorage.getItem(`book_img_${currentCharId}_${sec.key}`);
-
           return `
             <div class="timeline-item ${isEven ? 'item-left' : 'item-right'} ${isActive ? 'is-active' : ''}" data-name="${sec.title}">
               <div class="time-tag">
                 <span class="tag-circle">${sec.icon}</span>
                 <span class="tag-line"></span>
               </div>
-
               <div class="time-card">
                 <h3 class="tc-title">${sec.title}</h3>
                 <p class="tc-desc">${sec.desc}</p>
               </div>
-
               <!-- 图片容器 -->
               <div class="time-image" data-key="${sec.key}">
                 ${savedImgBase64 
@@ -171,13 +151,11 @@ document.addEventListener("click", () => {
         }).join("")}
       </div>
     `;
-
     // 绑定卡片点击（打开抽屉）
     contentEl.querySelectorAll(".timeline-item").forEach(item => {
       item.onclick = async (e) => {
         // 如果点的是图片的区域，就不打开抽屉
         if (e.target.closest(".time-image")) return;
-
         const targetName = item.dataset.name;
         const targetCat = currentCategories.find(c => c.name === targetName);
         if (!targetCat) {
@@ -190,48 +168,45 @@ document.addEventListener("click", () => {
         openChapterDrawer(targetCat.name); 
       };
     });
-
-    // 👈 绑定图片选择与裁剪事件
-    contentEl.querySelectorAll(".time-image").forEach(imgWrap => {
-      imgWrap.onclick = (e) => {
-        e.stopPropagation(); // 阻止触发外层卡片点击
-        
-        openImagePicker("illustration", async (imgId) => {
-          const img = await db.get("images", imgId);
-          if (img && img.origin && img.origin.data instanceof Blob) {
-            const reader = new FileReader();
-            
-            reader.onload = async (event) => {
-              const base64Url = event.target.result;
-              
-              // 调起裁剪框
-              const { showCropModal } = await import("../ui/image-cropper.js");
-              
-              showCropModal(base64Url, (croppedBase64) => {
-                // 显示裁剪后的图
-                imgWrap.innerHTML = `<img src="${croppedBase64}" style="width:100%; height:100%; object-fit:cover;">`;
-                imgWrap.dataset.imgid = imgId; 
-                showToast("插图已裁剪并更新");
-                
-                // 存进 localStorage
-                const storageKey = `book_img_${currentCharId}_${imgWrap.dataset.key}`;
-                localStorage.setItem(storageKey, croppedBase64); 
-              });
-            };
-            reader.readAsDataURL(img.origin.data);
-          }
+    // ========== 图片点击绑定（已修改，对齐thumb优先逻辑） ==========
+contentEl.querySelectorAll(".time-image").forEach(imgWrap => {
+  imgWrap.onclick = (e) => {
+    e.stopPropagation();
+    openImagePicker("illustration", async (imgId) => {
+      // ✅ 先拿经过 getAllImages 包装好的图片列表（带base64字段）
+      const allImgList = await getAllImages();
+      const img = allImgList.find(item => item.id === imgId);
+      if (!img) {
+        showToast("图片不存在");
+        return;
+      }
+      let base64Url = null;
+      // 增加校验：必须是合法dataurl，过滤空串
+      if (img?.thumb?.data && typeof img.thumb.data === "string" && img.thumb.data.startsWith("data:image/")) {
+        base64Url = img.thumb.data;
+      } else if (img?.base64 && typeof img.base64 === "string" && img.base64.startsWith("data:image/")) {
+        base64Url = img.base64;
+      }
+      if (base64Url) {
+        showCropModal(base64Url, (croppedBase64) => {
+          const safeB64 = croppedBase64.replace(/\s/g, "");
+          const storageKey = `book_img_${currentCharId}_${imgWrap.dataset.key}`;
+          localStorage.setItem(storageKey, safeB64);
+          showToast("插图已裁剪并更新");
+          renderContent();
         });
-      };
+      } else {
+        showToast("这张图片没有可用图，无法选用");
+      }
     });
+  };
+});
   }
-   
-
   // 底部滑出的剧情抽屉
   function openChapterDrawer(categoryName) {
     // 阻止重复打开
     let drawer = document.querySelector(".books-drawer");
     if (drawer) drawer.remove();
-
     drawer = document.createElement("div");
     drawer.className = "books-drawer";
     
@@ -247,7 +222,6 @@ document.addEventListener("click", () => {
         </div>
       `).join("");
     }
-
     drawer.innerHTML = `
       <div class="drawer-mask"></div>
       <div class="drawer-panel">
@@ -261,21 +235,16 @@ document.addEventListener("click", () => {
         </div>
       </div>
     `;
-
     document.body.appendChild(drawer);
-
     // 动画滑出
     requestAnimationFrame(() => drawer.classList.add("show"));
-
     // 关闭事件
     const closeDrawer = () => {
       drawer.classList.remove("show");
       setTimeout(() => drawer.remove(), 300);
     };
-
     drawer.querySelector(".drawer-mask").onclick = closeDrawer;
     drawer.querySelector(".drawer-close").onclick = closeDrawer;
-
     // 点击章节 -> 去阅读
     drawer.querySelectorAll(".drawer-item").forEach(item => {
       item.onclick = () => {
@@ -283,9 +252,6 @@ document.addEventListener("click", () => {
       };
     });
   }
-
-
-
 function renderFolds() {
   const wrap = contentEl.querySelector("#fold-wrap");
   if (!currentChapters.length) {
@@ -294,7 +260,6 @@ function renderFolds() {
     return;
   }
   wrap.classList.remove("is-empty");
-
   wrap.innerHTML = `
     <div class="bookmark-scroll">
       ${currentChapters.map((ch, i) => {
@@ -304,11 +269,9 @@ function renderFolds() {
         // 高矮：根据索引算高度
         const heights = [240, 220, 260, 210, 250, 230, 245, 225];
         const height = heights[i % heights.length];
-
 const plums = ["deco-plum-01.png", "deco-plum-02.png"];
 const plum = plums[i % plums.length];
 const meiSide = i % 2 === 0 ? "left" : "right";   // ← 奇偶决定位置
-
 return `
   <div class="bookmark" data-id="${ch.id}" style="margin-top: ${offset}px; height: ${height}px;">
     <div class="bm-mei bm-mei-${meiSide}">
@@ -321,16 +284,12 @@ return `
       }).join("")}
     </div>
   `;
-
   wrap.querySelectorAll(".bookmark").forEach(item => {
     item.onclick = () => {
       location.hash = `#/tanmi/books/read/${item.dataset.id}`;
     };
   });
 }
-
-
-
   /* ===== 编辑菜单 ===== */
   async function openEditMenu() {
     const { showModal, closeModal } = await import("../ui/modal.js");
@@ -352,17 +311,14 @@ return `
         }
       </style>
     `);
-
     modal.querySelector("[data-act='cat']").onclick = () => { closeModal(modal); openCategoryManager(); };
     modal.querySelector("[data-act='chp']").onclick = () => { closeModal(modal); openChapterManager(); };
     modal.querySelector("[data-act='exp']").onclick = () => { closeModal(modal); doExport(); };
     modal.querySelector("[data-act='imp']").onclick = () => { closeModal(modal); doImport(); };
   }
-
   /* ===== 目录管理 ===== */
   async function openCategoryManager() {
     const { showModal, closeModal } = await import("../ui/modal.js");
-
     const render = () => {
       const modal = showModal(`
         <div style="text-align:center;font-family:var(--font-title);font-size:16px;color:var(--cinnabar);letter-spacing:4px;margin-bottom:16px;">
@@ -372,7 +328,6 @@ return `
         <button class="btn ghost" id="cat-add" style="width:100%;padding:12px;margin-top:12px;">＋ 新建目录</button>
         <button class="btn ghost" id="cat-close" style="width:100%;padding:12px;margin-top:8px;">收 起</button>
       `);
-
       const listEl = modal.querySelector("#cat-list");
       listEl.innerHTML = currentCategories.map(cat => `
         <div class="cat-row" data-id="${cat.id}" style="
@@ -386,7 +341,6 @@ return `
           `}
         </div>
       `).join("");
-
       listEl.querySelectorAll(".cat-row").forEach(row => {
         const id = row.dataset.id;
         const input = row.querySelector(".cat-name");
@@ -407,21 +361,16 @@ return `
           };
         }
       });
-
 modal.querySelector("#cat-add").onclick = async () => {
   closeModal(modal);
   openNewCategoryModal();
 };
-
       modal.querySelector("#cat-close").onclick = () => closeModal(modal);
     };
-
     render();
   }
-
 async function openNewCategoryModal() {
   const { showModal, closeModal } = await import("../ui/modal.js");
-
   const modal = showModal(`
     <div style="text-align:center;font-family:var(--font-title);font-size:16px;color:var(--cinnabar);letter-spacing:4px;margin-bottom:20px;">
       新 建 目 录
@@ -435,10 +384,8 @@ async function openNewCategoryModal() {
       <button class="btn" id="new-cat-ok" style="flex:1;padding:12px;">确 定</button>
     </div>
   `);
-
   const input = modal.querySelector("#new-cat-name");
   setTimeout(() => input.focus(), 100);
-
   const submit = async () => {
     const name = input.value.trim();
     if (!name) {
@@ -452,29 +399,24 @@ async function openNewCategoryModal() {
     renderContent();
     openCategoryManager();
   };
-
   modal.querySelector("#new-cat-ok").onclick = submit;
   modal.querySelector("#new-cat-cancel").onclick = () => {
     closeModal(modal);
     openCategoryManager();
   };
-
   // 回车提交
   input.onkeydown = (e) => {
     if (e.key === "Enter") submit();
   };
 }
-
   /* ===== 剧情管理 ===== */
   async function openChapterManager() {
     const { showModal, closeModal } = await import("../ui/modal.js");
     const cat = currentCategories.find(c => c.id === currentCategoryId);
-
     const render = async () => {
       const chapters = cat?.isFavorite
         ? await getFavoriteChapters(ownerId)
         : await getChaptersByCategory(currentCategoryId);
-
       const modal = showModal(`
         <div style="text-align:center;font-family:var(--font-title);font-size:16px;color:var(--cinnabar);letter-spacing:4px;margin-bottom:16px;">
           剧 情 管 理
@@ -486,7 +428,6 @@ async function openNewCategoryModal() {
         ` : ""}
         <button class="btn ghost" id="chp-close" style="width:100%;padding:12px;margin-top:8px;">收 起</button>
       `);
-
       const listEl = modal.querySelector("#chp-list");
       listEl.innerHTML = chapters.map(ch => `
         <div class="chp-row" data-id="${ch.id}" style="
@@ -502,7 +443,6 @@ async function openNewCategoryModal() {
           <button class="btn ghost chp-del" style="padding:6px 10px;color:var(--cinnabar);">×</button>
         </div>
       `).join("") || `<div class="empty-state" style="padding:20px;">暂无剧情。</div>`;
-
       listEl.querySelectorAll(".chp-row").forEach(row => {
         const id = row.dataset.id;
         row.querySelector(".chp-edit").onclick = () => {
@@ -519,7 +459,6 @@ async function openNewCategoryModal() {
           renderContent();
         };
       });
-
       const addBtn = modal.querySelector("#chp-add");
       if (addBtn) {
         addBtn.onclick = () => {
@@ -527,13 +466,10 @@ async function openNewCategoryModal() {
           location.hash = `#/tanmi/books/new/${currentCategoryId}`;
         };
       }
-
       modal.querySelector("#chp-close").onclick = () => closeModal(modal);
     };
-
     await render();
   }
-
   /* ===== 导出 ===== */
   async function doExport() {
     const data = await exportBook(currentBook.id);
@@ -546,7 +482,6 @@ async function openNewCategoryModal() {
     URL.revokeObjectURL(a.href);
     showToast("已导出");
   }
-
   /* ===== 导入 ===== */
   function doImport() {
     const input = document.createElement("input");
@@ -568,22 +503,19 @@ async function openNewCategoryModal() {
     };
     input.click();
   }
-
   /* ===== 首次加载 ===== */
-  await loadAndRender();
-
+  (async () => {
+    await loadAndRender();
+  })();
   return el;
 }
-
 /* ============================================================
  * 工具
  * ============================================================ */
-
 /** 竖排文字 */
 function splitVertical(str) {
   return String(str).split("").map(c => `<span>${escapeHtml(c)}</span>`).join("");
 }
-
 function escapeHtml(str) {
   return String(str || "").replace(/[&<>"']/g, s => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"

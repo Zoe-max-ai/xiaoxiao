@@ -171,15 +171,41 @@ export async function wangshiGameEditView({ params }) {
     location.hash = "#/wangshi";
   };
 
-  /* ===== 更换封面 ===== */
-  async function changeCover() {
-    openImagePicker("game_cover", async (id) => {
-      if (!id) return;
-      await updateGame(game.id, { coverImageId: id });
-      game.coverImageId = id;
-      showToast("封面已更新");
+/* ===== 更换封面 ===== */
+async function changeCover() {
+  try {
+    openImagePicker("game_cover", async (imgId) => {
+      try {
+        if (!imgId) return;
+        const img = await db.get("images", imgId);
+        if (!img) {
+          showToast("图片记录不存在");
+          return;
+        }
+        const useData = img.thumb?.data ?? img.origin?.data;
+        if (!useData) {
+          showToast("图片数据异常");
+          return;
+        }
+        await updateGame(game.id, { coverImageId: imgId });
+        game.coverImageId = imgId;
+        showToast("封面已更新");
+      } catch (err) {
+        console.error("更新封面出错：", err);
+        showToast("封面更新失败，请重试");
+      }
     });
+  } catch (err) {
+    console.error("唤起选图组件出错：", err);
   }
+}
+
+
+
+
+
+
+
 
   /* ===== 保存当前节点 ===== */
   async function saveCurrentNode() {

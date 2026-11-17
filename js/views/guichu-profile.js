@@ -127,15 +127,26 @@ export async function guichuProfileView() {
   const avatarPreview = el.querySelector("#avatar-preview");
   const avatarInput = el.querySelector("#avatar-input");
   avatarPreview.onclick = () => avatarInput.click();
-  avatarInput.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const cropped = await openAvatarCropper(file, 200);
-    if (!cropped) return;
-    tempAvatarBlob = cropped;
-    const url = URL.createObjectURL(cropped);
-    avatarPreview.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
+avatarInput.onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const cropped = await openAvatarCropper(file, 200);
+  if (!cropped) return;
+
+  // 预览依旧用 blob url，不影响实时预览体验
+  const url = URL.createObjectURL(cropped);
+  avatarPreview.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;
+
+  // blob 转 base64，存字符串用于入库持久化
+  const reader = new FileReader();
+  reader.readAsDataURL(cropped);
+  reader.onload = () => {
+    let b64 = reader.result;
+    b64 = b64.replace(/\s/g, ""); // 清除换行空格，安卓兼容
+    tempAvatarBlob = b64; // 现在这个变量存的是base64字符串，不再是Blob
   };
+};
+
 
   // 保存
   el.querySelector("#btn-save").onclick = async () => {

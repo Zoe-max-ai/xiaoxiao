@@ -41,18 +41,29 @@ export async function userCreateView() {
   `;
 
   let avatarBlob = null;
-
   const avatarPreview = el.querySelector("#avatar-preview");
   const avatarInput = el.querySelector("#avatar-input");
-
   avatarPreview.onclick = () => avatarInput.click();
-  avatarInput.onchange = (e) => {
+  avatarInput.onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    avatarBlob = file;
-    const url = URL.createObjectURL(file);
+    // 和档案页一致，调用裁剪
+    const { openAvatarCropper } = await import("../ui/avatar-cropper.js");
+    const cropped = await openAvatarCropper(file, 200);
+    if (!cropped) return;
+
+    const url = URL.createObjectURL(cropped);
     avatarPreview.innerHTML = `<img src="${url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(cropped);
+    reader.onload = () => {
+      let b64 = reader.result;
+      b64 = b64.replace(/\s/g, "");
+      avatarBlob = b64;
+    };
   };
+
 
   el.querySelector("#btn-submit").onclick = async () => {
     const name = el.querySelector("#name-input").value.trim();
@@ -108,64 +119,58 @@ await initPresetWorldbook(db, user.id);
   return el;
 }
 
-/* ========== 辅助函数 ========== */
-
-// 把头像 Blob 存进 images 表
-async function saveAvatarToGallery(blob) {
+/* ========== 辅助函数（base64版本，和user-service统一） ========== */
+async function saveAvatarToGallery(base64Str) {
   const id = uid("img");
-  const img = await loadImage(blob);
-  const thumb = await generateThumb(img, 200, 200);
-
+  const img = await loadImage(base64Str);
+  const thumbB64 = await generateThumbB64(img, 200, 200);
   await db.put("images", {
     id,
-    ownerId: null,     // 用户头像不属于任何用户
+    ownerId: null,
     category: "avatar",
     theme: null,
     tags: ["用户头像"],
     origin: {
-      data: blob,
-      mime: blob.type,
+      data: base64Str,
+      mime: getMimeFromB64(base64Str),
       width: img.width,
       height: img.height,
-      size: blob.size,
     },
     thumb: {
-      data: thumb,
+      data: thumbB64,
       width: 200,
       height: 200,
-      size: thumb.size,
     },
     createdAt: Date.now(),
   });
-
   return id;
 }
-
-// 从图库读头像 URL
 async function getAvatarUrl(avatarId) {
   const img = await db.get("images", avatarId);
-  if (!img) return null;
-  return URL.createObjectURL(img.thumb.data);
+  if (!img?.thumb?.data) return null;
+  return img.thumb.data.replace(/\s/g, "");
 }
-
-// 加载图片
-function loadImage(blob) {
+function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = reject;
-    img.src = URL.createObjectURL(blob);
+    img.src = src;
   });
 }
-
-// 生成缩略图
-function generateThumb(img, maxW, maxH) {
+function generateThumbB64(img, maxW, maxH) {
   return new Promise((resolve) => {
     const canvas = document.createElement("canvas");
     const ratio = Math.min(maxW / img.width, maxH / img.height);
     canvas.width = img.width * ratio;
     canvas.height = img.height * ratio;
-    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(resolve, "image/jpeg", 0.9);
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const b64 = canvas.toDataURL("image/jpeg", 0.9);
+    resolve(b64.replace(/\s/g, ""));
   });
+}
+function getMimeFromB64(b64) {
+  const m = b64.match(/data:(.*?);/);
+  return m ? m[1] : "image/jpeg";
 }

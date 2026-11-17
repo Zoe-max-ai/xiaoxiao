@@ -62,88 +62,72 @@ export async function wangshiView() {
     <div id="wangshi-content" style="padding: 0 20px;"></div>
   `;
 
-  // 👈 绑定卡片点击换图逻辑
-  const wangshiHero = el.querySelector("#wangshi-hero-card");
-  const wangshiUpload = el.querySelector("#wangshi-upload");
-
-  wangshiHero.onclick = () => {
-    openImagePicker("illustration", async (imgId) => {
-      const { db } = await import("../core/db.js");
-      const img = await db.get("images", imgId);
-      
-      if (img && img.origin && img.origin.data instanceof Blob) {
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-          const base64Url = event.target.result;
-          
-          // 👈 调用裁剪模块
-          const { showCropModal } = await import("../ui/image-cropper.js");
-          showCropModal(base64Url, (croppedBase64) => {
-            wangshiHero.style.backgroundImage = `url('${croppedBase64}')`;
-            localStorage.setItem("wangshi_cover_url", croppedBase64);
-            showToast("往事画卷已裁剪并更换");
-          });
-        };
-        reader.readAsDataURL(img.origin.data);
+// 👈 绑定卡片点击换图逻辑
+const wangshiHero = el.querySelector("#wangshi-hero-card");
+const wangshiUpload = el.querySelector("#wangshi-upload");
+wangshiHero.onclick = () => {
+  openImagePicker("illustration", async (imgId) => {
+    const img = await db.get("images", imgId);
+    if (img && img.origin && img.origin.data) {
+      const base64Url = img.origin.data;
+      showCropModal(base64Url, (croppedBase64) => {
+        wangshiHero.style.backgroundImage = `url('${croppedBase64}')`;
+        localStorage.setItem("wangshi_cover_url", croppedBase64);
+        showToast("往事画卷已裁剪并更换");
+      });
+    }
+  });
+};
+wangshiUpload.onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const base64Url = event.target.result;
+    
+    // 👈 调用裁剪工具
+    showCropModal(base64Url, async (croppedBase64) => {
+      try {
+        // 1. 立刻更新 UI
+        wangshiHero.style.backgroundImage = `url('${croppedBase64}')`;
+        
+        // 2. 存进本地缓存（下次刷新秒开）
+        localStorage.setItem("wangshi_cover_url", croppedBase64);
+        // 3. 👈 核心：把裁剪后的图转成 Blob 并存入数据库，以便备份
+        const { db } = await import("../core/db.js");
+        const res = await fetch(croppedBase64);
+        const blob = await res.blob();
+        // 生成一张小的缩略图用于备份，防止数据库爆炸
+        const img = new Image();
+        img.src = croppedBase64;
+        await new Promise(r => img.onload = r);
+        const canvas = document.createElement("canvas");
+        canvas.width = 400; 
+        canvas.height = 220;
+        canvas.getContext("2d").drawImage(img, 0, 0, 400, 220);
+        const thumbBlob = await new Promise(r => canvas.toBlob(r, "image/jpeg", 0.7));
+        const id = "img_wangshi_cover_" + Date.now();
+        await db.put("images", {
+          id: id,
+          category: "game_cover", // 👈 分类标识
+          name: "往事封面_" + new Date().toLocaleDateString(),
+          origin: { data: blob, mime: blob.type },
+          thumb: { data: thumbBlob, mime: "image/jpeg" },
+          createdAt: Date.now()
+        });
+        // 把生成的 id 也存下来，方便以后“从绘卷选图”时回显
+        localStorage.setItem("wangshi_cover_id", id);
+        
+        showToast("画卷已更新并备份");
+      } catch (err) {
+        console.error(err);
+        showToast("图片保存失败");
       }
     });
-  };
-
-
-  wangshiUpload.onchange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64Url = event.target.result;
-      
-      // 👈 调用裁剪工具
-      showCropModal(base64Url, async (croppedBase64) => {
-        try {
-          // 1. 立刻更新 UI
-          wangshiHero.style.backgroundImage = `url('${croppedBase64}')`;
-          
-          // 2. 存进本地缓存（下次刷新秒开）
-          localStorage.setItem("wangshi_cover_url", croppedBase64);
-
-          // 3. 👈 核心：把裁剪后的图转成 Blob 并存入数据库，以便备份
-          const { db } = await import("../core/db.js");
-          const res = await fetch(croppedBase64);
-          const blob = await res.blob();
-
-          // 生成一张小的缩略图用于备份，防止数据库爆炸
-          const img = new Image();
-          img.src = croppedBase64;
-          await new Promise(r => img.onload = r);
-          const canvas = document.createElement("canvas");
-          canvas.width = 400; 
-          canvas.height = 220;
-          canvas.getContext("2d").drawImage(img, 0, 0, 400, 220);
-          const thumbBlob = await new Promise(r => canvas.toBlob(r, "image/jpeg", 0.7));
-
-          const id = "img_wangshi_cover_" + Date.now();
-          await db.put("images", {
-            id: id,
-            category: "game_cover", // 👈 分类标识
-            name: "往事封面_" + new Date().toLocaleDateString(),
-            origin: { data: blob, mime: blob.type },
-            thumb: { data: thumbBlob, mime: "image/jpeg" },
-            createdAt: Date.now()
-          });
-
-          // 把生成的 id 也存下来，方便以后“从绘卷选图”时回显
-          localStorage.setItem("wangshi_cover_id", id);
-          
-          showToast("画卷已更新并备份");
-        } catch (err) {
-          console.error(err);
-          showToast("图片保存失败");
-        }
-      });
-    };
     reader.readAsDataURL(file);
   };
+};
+
 
   // ====== 下面是你的 Tab 绑定和渲染逻辑（没动） ======
   const contentEl = el.querySelector("#wangshi-content");

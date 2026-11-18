@@ -230,61 +230,75 @@ export async function guichuDataView() {
     };
   }
 
-  function openImportSelectModal(data) {
-    const modal = showModal(`
-      <div class="data-modal-title">选 择 要 导 入 的 分 组</div>
-      <div class="data-group-list" id="import-groups">
-        ${DATA_GROUPS.filter(g => data.groups[g.id]).map(g => `
-          <label class="data-group-item">
-            <input type="checkbox" data-gid="${g.id}" checked>
-            <span class="data-group-name">${g.name}</span>
-          </label>
-        `).join("")}
-      </div>
-
-      <div class="data-modal-sub" style="margin-top:12px;">导入方式</div>
-      <div class="data-radio-list">
-        <label class="data-radio-item">
-          <input type="radio" name="conflict" value="skip" checked>
-          <span>跳过重复（安全）</span>
+function openImportSelectModal(data) {
+  const modal = showModal(`
+    <div class="data-modal-title">选 择 要 导 入 的 分 组</div>
+    <div class="data-group-list" id="import-groups">
+      ${DATA_GROUPS.filter(g => data.groups[g.id]).map(g => `
+        <label class="data-group-item">
+          <input type="checkbox" data-gid="${g.id}" checked>
+          <span class="data-group-name">${g.name}</span>
         </label>
-        <label class="data-radio-item">
-          <input type="radio" name="conflict" value="overwrite">
-          <span>覆盖已有</span>
-        </label>
-        <label class="data-radio-item">
-          <input type="radio" name="conflict" value="rename">
-          <span>生成新 ID（追加）</span>
-        </label>
-      </div>
+<div style="font-size:11px; color:var(--cinnabar); padding-left:24px; margin-bottom:4px;">⚠️ 勾选会覆盖当前已有的封面缓存</div>
+      `).join("")}
+    </div>
+    <!-- ========== 新增这一行复选框 ========== -->
+    ${data.localStorageData ? `
+    <label class="data-group-item" style="margin-top:8px;">
+      <input type="checkbox" id="import-localstorage">
+      <span class="data-group-name">同步恢复本地缓存（封面、自定义图）</span>
+    </label>
+    ` : ""}
+    <div class="data-modal-sub" style="margin-top:12px;">导入方式</div>
+    <div class="data-radio-list">
+      <label class="data-radio-item">
+        <input type="radio" name="conflict" value="skip" checked>
+        <span>跳过重复（安全）</span>
+      </label>
+      <label class="data-radio-item">
+        <input type="radio" name="conflict" value="overwrite">
+        <span>覆盖已有</span>
+      </label>
+      <label class="data-radio-item">
+        <input type="radio" name="conflict" value="rename">
+        <span>生成新 ID（追加）</span>
+      </label>
+    </div>
+    <div class="data-modal-actions">
+      <button class="btn ghost" id="import-cancel2">取 消</button>
+      <button class="btn" id="import-ok">导 入</button>
+    </div>
+  `);
+  modal.querySelector("#import-cancel2").onclick = () => closeModal(modal);
+  
+  modal.querySelector("#import-ok").onclick = async () => {
+    const groupIds = [...modal.querySelectorAll("#import-groups input:checked")]
+      .map(i => i.dataset.gid);
+    if (!groupIds.length) {
+      showToast("请至少选择一个分组");
+      return;
+    }
+    const conflictMode = modal.querySelector("input[name='conflict']:checked").value;
+    const importLocalChecked = modal.querySelector("#import-localstorage")?.checked;
 
-      <div class="data-modal-actions">
-        <button class="btn ghost" id="import-cancel2">取 消</button>
-        <button class="btn" id="import-ok">导 入</button>
-      </div>
-    `);
+    showToast("正在导入…");
+    const stats = await importData(data, groupIds, conflictMode);
 
-    modal.querySelector("#import-cancel2").onclick = () => closeModal(modal);
-    
-    modal.querySelector("#import-ok").onclick = async () => {
-      const groupIds = [...modal.querySelectorAll("#import-groups input:checked")]
-        .map(i => i.dataset.gid);
-      if (!groupIds.length) {
-        showToast("请至少选择一个分组");
-        return;
+    // ========== 在这里单独处理 localStorage 导入 ==========
+    if (importLocalChecked && data.localStorageData) {
+      for (const [key, value] of Object.entries(data.localStorageData)) {
+        localStorage.setItem(key, value);
       }
-      const conflictMode = modal.querySelector("input[name='conflict']:checked").value;
+    }
 
-      showToast("正在导入…");
-      const stats = await importData(data, groupIds, conflictMode);
-      closeModal(modal);
-      showToast(`导入完成：新增 ${stats.imported}，覆盖 ${stats.overwritten}，跳过 ${stats.skipped}`);
+    closeModal(modal);
+    showToast(`导入完成：新增 ${stats.imported}，覆盖 ${stats.overwritten}，跳过 ${stats.skipped}`);
+    setTimeout(() => {
+      window.location.reload();
+    }, 800);
+  };
+}
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 800);
-    };
-  }
 
   /* ========== 清除 ========== */
 

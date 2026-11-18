@@ -31,19 +31,28 @@ export async function openImagePicker(category = "all", onSelect) {
   `);
   modal.querySelector("#picker-cancel").onclick = () => closeModal(modal);
 
-  for (const img of list) {
-    const imgEl = modal.querySelector(`.pick-img[data-src="${img.id}"]`);
-    if (!imgEl) continue;
+for (const img of list) {
+  const imgEl = modal.querySelector(`.pick-img[data-src="${img.id}"]`);
+  if (!imgEl) continue;
 
-    if (img.thumb?.data && typeof img.thumb.data === "string" && img.thumb.data.startsWith("data:image/")) {
-      imgEl.src = img.thumb.data;
-    } else if (img.base64 && typeof img.base64 === "string" && img.base64.startsWith("data:image/")) {
-      imgEl.src = img.base64;
-    } else {
-      imgEl.src = "";
-      imgEl.style.background = "#f4f1ec";
-    }
+  // 1. 优先判断是不是本地路径（种子图）
+  if (img.base64 && typeof img.base64 === "string" && img.base64.startsWith("assets/")) {
+    imgEl.src = img.base64;
+  } 
+  // 2. 如果不是本地路径，再判断是不是用户上传的 Base64
+  else if (img.base64 && typeof img.base64 === "string" && img.base64.startsWith("data:image/")) {
+    imgEl.src = img.base64;
+  } 
+  // 3. 如果都没有，再用缩略图兜底（你昨天写的老逻辑）
+  else if (img.thumb?.data && typeof img.thumb.data === "string" && img.thumb.data.startsWith("data:image/")) {
+    imgEl.src = img.thumb.data;
+  } 
+  // 4. 实在没有，显示灰底
+  else {
+    imgEl.src = "";
+    imgEl.style.background = "#f4f1ec";
   }
+}
 
   modal.querySelectorAll(".pick-item").forEach(item => {
     item.onclick = () => {

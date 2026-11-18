@@ -105,18 +105,13 @@ function filterColorOverrides(ov) {
 }
 
 /**
- * 应用背景图
+ * 应用背景图（完美兼容 Base64 和种子图路径）
  */
 async function applyBackground(themeId, usage = "chenshi") {
-  if (currentBgUrl) {
-    URL.revokeObjectURL(currentBgUrl);
-    currentBgUrl = null;
-  }
-
   const bgLayer = document.getElementById("bg-layer");
   if (!bgLayer) return;
 
-  // 先看微调里有没有指定图片
+  // 1. 先看微调里有没有指定图片
   const overrideKey = { chenshi: "bgChenshi", chat: "bgChat", letter: "bgLetter" }[usage];
   const overrideImageId = currentOverrides[overrideKey];
 
@@ -126,7 +121,7 @@ async function applyBackground(themeId, usage = "chenshi") {
     bg = await db.get("images", overrideImageId);
   }
 
-  // 微调没指定 / 找不到 → 从图库按主题 + 用途找
+  // 2. 微调没指定 / 找不到 → 从图库按主题 + 用途找
   if (!bg) {
     const usageMap = { chenshi: "尘世", chat: "聊天", letter: "信纸" };
     const usageTag = usageMap[usage] || usage;
@@ -138,11 +133,28 @@ async function applyBackground(themeId, usage = "chenshi") {
     );
   }
 
-  const hasValidData = bg && bg.origin && bg.origin.data instanceof Blob;
+  // ==========================================
+  // 👇 核心：彻底告别 Blob，适配 Base64 和 种子静态图
+  // ==========================================
+  let imageUrl = null;
 
-  if (hasValidData) {
-    currentBgUrl = URL.createObjectURL(bg.origin.data);
-    bgLayer.style.backgroundImage = `url(${currentBgUrl})`;
+  if (bg) {
+    // 如果是种子图（有 seedFile 字段），直接拼本地路径
+    if (bg.isSeed && bg.seedFile) {
+      imageUrl = `assets/seed/${bg.seedFile}`;
+    } 
+    // 如果是用户上传的 Base64 字符串
+    else if (bg.origin && typeof bg.origin.data === "string" && bg.origin.data.startsWith("data:image/")) {
+      imageUrl = bg.origin.data;
+    }
+    // 如果还在用旧的 Blob 格式（作为兜底，电脑端还能用）
+    else if (bg.origin && bg.origin.data instanceof Blob) {
+      imageUrl = URL.createObjectURL(bg.origin.data);
+    }
+  }
+
+  if (imageUrl) {
+    bgLayer.style.backgroundImage = `url(${imageUrl})`;
   } else {
     bgLayer.style.backgroundImage = "none";
   }

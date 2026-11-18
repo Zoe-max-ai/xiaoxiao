@@ -429,98 +429,96 @@ async function buildSystemPrompt(ownerId, targetId, mode, displayName, character
   return prompt;
 }
 
-  function renderMessageHtml(m) {
-    const isMe = m.fromType === "user";
-    let msgAvatar = null;
-    let msgName = "";
-
-    if (isMe) {
-      msgAvatar = userAvatarUrl;
-      msgName = "我";
-    } else if (mode === "group") {
-      const info = memberInfo[m.fromId];
-      msgAvatar = info?.avatarUrl;
-      msgName = info?.name || "?";
-    } else {
-      msgAvatar = avatarUrl;
-      msgName = displayName;
-    }
-
-    const avatarHtml = msgAvatar
-      ? `<img src="${msgAvatar}" alt="">`
-      : `<span>${escapeHtml(msgName.charAt(0))}</span>`;
-    const timeHtml = settings.timestamps
-      ? `<div class="chat-time">${formatTime(m.createdAt)}</div>`
-      : "";
-
-    const quoteHtml = m.quote
-      ? `<div class="chat-quote">
-           <div class="chat-quote-author">${escapeHtml(m.quote.fromName)}</div>
-           <div class="chat-quote-text">${escapeHtml(m.quote.content)}</div>
-         </div>`
-      : "";
-
-    if (m.revoked) {
-      return `
-        <div class="chat-row ${isMe ? "me" : "he"} revoked" data-mid="${m.id}">
-<div class="chat-avatar-wrap">
-  <div class="chat-avatar-frame">
-    <div class="chat-avatar">${avatarHtml}</div>
-  </div>
-</div>
-
-          <div class="chat-bubble-wrap">
-            <div class="chat-revoked">${isMe ? "你" : escapeHtml(msgName.charAt(0))}撤回了一句话</div>
-          </div>
-        </div>
-      `;
-    }
-
-    // 👈 判断是否为图片消息
-    const isImage = m.contentType === "image";
-    let bubbleContentHtml = "";
-    if (isImage) {
-      if (m.imageData) {
-        bubbleContentHtml = `
-          <div class="chat-image-msg">
-            <img src="${m.imageData}" alt="图片" class="chat-thumb" data-full="${m.imageData}">
-          </div>
-        `;renderMessages
-      } else if (m.content === "[图片已清理]") {
-        bubbleContentHtml = `<div class="chat-bubble" style="color:var(--ink-dim);">[图片已清理]</div>`;
-      } else {
-        bubbleContentHtml = `<div class="chat-bubble">${escapeHtml(m.content)}</div>`;
-      }
-    } else {
-      // 👈 暴力清洗：不管是 AI 发疯还是历史旧数据，只要出现 *xxx* 强行转成全角括号
-      // 如果 AI 不闭合星号（比如只写了 *轻叹），也能通过正则把残留的星号干掉
-      let safeContent = m.content.replace(/\*([^*]+)\*/g, '（$1）');
-      safeContent = safeContent.replace(/\*/g, ''); 
-      
-      // 👈 核心判断：只有对方发的，且消息是刚刚发出来的（比如 15 秒内），才触发打字机
-      const isNewMessage = (Date.now() - m.createdAt) < 15000;
-      const isTypewriter = settings.typewriter !== false && m.fromType !== "user" && isNewMessage;
-
-      if (isTypewriter) {
-        bubbleContentHtml = `<div class="chat-bubble" id="typewriter-${m.id}" data-text="${escapeHtml(safeContent)}"></div>`;
-      } else {
-        bubbleContentHtml = `<div class="chat-bubble">${escapeHtml(safeContent)}</div>`;
-      }
-      }
-
+function renderMessageHtml(m) {
+  const isMe = m.fromType === "user";
+  let msgAvatar = null;
+  let msgName = "";
+  if (isMe) {
+    msgAvatar = userAvatarUrl;
+    msgName = "我";
+  } else if (mode === "group") {
+    const info = memberInfo[m.fromId];
+    msgAvatar = info?.avatarUrl;
+    msgName = info?.name || "?";
+  } else {
+    msgAvatar = avatarUrl;
+    msgName = displayName;
+  }
+  const avatarHtml = msgAvatar
+    ? `<img src="${msgAvatar}" alt="">`
+    : `<span>${escapeHtml(msgName.charAt(0))}</span>`;
+  const timeHtml = settings.timestamps
+    ? `<div class="chat-time">${formatTime(m.createdAt)}</div>`
+    : "";
+  const quoteHtml = m.quote
+    ? `<div class="chat-quote">
+         <div class="chat-quote-author">${escapeHtml(m.quote.fromName)}</div>
+         <div class="chat-quote-text">${escapeHtml(m.quote.content)}</div>
+       </div>`
+    : "";
+  if (m.revoked) {
     return `
-      <div class="chat-row ${isMe ? "me" : "he"}" data-mid="${m.id}">
-        <div class="chat-avatar-wrap">
-          <div class="chat-avatar">${avatarHtml}</div>
+      <div class="chat-row ${isMe ? "me" : "he"} revoked" data-mid="${m.id}">
+        <div class="chat-avatar-row">
+          <div class="chat-avatar-wrap">
+            <div class="chat-avatar">${avatarHtml}</div>
+          </div>
         </div>
         <div class="chat-bubble-wrap">
-          ${quoteHtml}
-          ${bubbleContentHtml}
-          ${timeHtml}
+          <div class="chat-revoked">${isMe ? "你" : escapeHtml(msgName)}撤回了一句话</div>
         </div>
       </div>
     `;
   }
+  const isImage = m.contentType === "image";
+  let bubbleContentHtml = "";
+  if (isImage) {
+    if (m.imageData) {
+      bubbleContentHtml = `
+        <div class="chat-image-msg">
+          <img src="${m.imageData}" alt="图片" class="chat-thumb" data-full="${m.imageData}">
+        </div>
+      `;
+    } else if (m.content === "[图片已清理]") {
+      bubbleContentHtml = `<div class="chat-bubble" style="color:var(--ink-dim);">[图片已清理]</div>`;
+    } else {
+      // 图片兜底文字，同样加字数判断
+      const safeImgText = m.content;
+      const singleClass = safeImgText.length <= 18 ? "single-line" : "";
+      bubbleContentHtml = `<div class="chat-bubble ${singleClass}">${escapeHtml(safeImgText)}</div>`;
+    }
+  } else {
+    let safeContent = m.content.replace(/\*([^*]+)\*/g, '（$1）');
+    safeContent = safeContent.replace(/\*/g, '');
+    // 核心：18字判断
+const singleClass = safeContent.length <= 18 ? "single-line" : "";
+
+
+    const isNewMessage = (Date.now() - m.createdAt) < 15000;
+    const isTypewriter = settings.typewriter !== false && m.fromType !== "user" && isNewMessage;
+    if (isTypewriter) {
+      bubbleContentHtml = `<div class="chat-bubble ${singleClass}" id="typewriter-${m.id}" data-text="${escapeHtml(safeContent)}"></div>`;
+    } else {
+      bubbleContentHtml = `<div class="chat-bubble ${singleClass}">${escapeHtml(safeContent)}</div>`;
+    }
+  }
+  return `
+    <div class="chat-row ${isMe ? "me" : "he"}" data-mid="${m.id}">
+      <div class="chat-avatar-row">
+        <div class="chat-avatar-wrap">
+          <div class="chat-avatar">${avatarHtml}</div>
+        </div>
+      </div>
+      <div class="chat-bubble-wrap">
+        ${quoteHtml}
+        ${bubbleContentHtml}
+        ${timeHtml}
+      </div>
+    </div>
+  `;
+}
+
+
 
   /* ===== 长按消息 ===== */
   function bindLongPress() {

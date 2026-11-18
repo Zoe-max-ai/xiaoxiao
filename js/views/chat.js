@@ -463,9 +463,12 @@ async function buildSystemPrompt(ownerId, targetId, mode, displayName, character
     if (m.revoked) {
       return `
         <div class="chat-row ${isMe ? "me" : "he"} revoked" data-mid="${m.id}">
-          <div class="chat-avatar-wrap">
-            <div class="chat-avatar">${avatarHtml}</div>
-          </div>
+<div class="chat-avatar-wrap">
+  <div class="chat-avatar-frame">
+    <div class="chat-avatar">${avatarHtml}</div>
+  </div>
+</div>
+
           <div class="chat-bubble-wrap">
             <div class="chat-revoked">${isMe ? "你" : escapeHtml(msgName.charAt(0))}撤回了一句话</div>
           </div>
@@ -872,11 +875,14 @@ async function buildSystemPrompt(ownerId, targetId, mode, displayName, character
       typingIndicatorEl = document.createElement("div");
       typingIndicatorEl.className = "chat-row he";
       typingIndicatorEl.innerHTML = `
-        <div class="chat-avatar-wrap">
-          <div class="chat-avatar">
-            ${avatarUrl ? `<img src="${avatarUrl}" alt="">` : `<span>${escapeHtml(displayName[0])}</span>`}
-          </div>
-        </div>
+<div class="chat-avatar-wrap">
+  <div class="chat-avatar-frame">
+    <div class="chat-avatar">
+      ${avatarUrl ? `<img src="${avatarUrl}" alt="">` : `<span>${escapeHtml(displayName[0])}</span>`}
+    </div>
+  </div>
+</div>
+
         <div class="chat-bubble-wrap">
           <div class="chat-bubble" style="color: var(--ink-dim); font-size: 13px; display: flex; align-items: center; gap: 4px; padding: 10px 16px;">
             对方正在输入

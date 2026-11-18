@@ -148,12 +148,11 @@ export async function yajiEditView({ params }) {
       const rawBase64 = ev.target.result;
       try {
         const { compressImage } = await import("../ui/image-cropper.js");
-        // 将立绘压缩到 1MB 以内（如果是长图，质量会稍微降低一点，但手机上看绝对够清晰）
         const compressedBase64 = await compressImage(rawBase64, 1);
         
-        // 把 Base64 转回 Blob 存起来
-        const res = await fetch(compressedBase64);
-        tempPortraitBlob = await res.blob();
+        
+        // ✅ 改成直接存 Base64 字符串
+        tempPortraitBlob = compressedBase64; 
         
         portraitPreview.innerHTML = `<img src="${compressedBase64}" style="width:100%;height:100%;object-fit:cover">`;
       } catch (err) {
@@ -483,30 +482,41 @@ export async function yajiEditView({ params }) {
 
     let avatarId = char.avatarId;
     if (tempAvatarBlob) {
+      // 👈 确保传过去的确实是 Blob，如果是 base64 就要处理
       avatarId = await saveToGallery(tempAvatarBlob, "avatar");
     }
 
     let portraitId = char.portraitId;
     if (tempPortraitBlob) {
+      // 👈 这里的 tempPortraitBlob 可能是 Blob，也可能是空
+      if (!tempPortraitBlob) {
+        showToast("立绘文件丢失，请重新上传");
+        return;
+      }
       portraitId = await saveToGallery(tempPortraitBlob, "portrait");
     }
 
-    await updateCharacter(characterId, {
-      name,
-      nickname: el.querySelector("#nickname-input").value.trim() || null,
-      du: el.querySelector("#du-input").value.trim() || null,
-      duMotto: el.querySelector("#dumotto-input").value.trim() || null,
-      age: el.querySelector("#age-input").value.trim() || null,
-      bio: el.querySelector("#bio-input").value.trim() || "",
-      avatarId,
-      portraitId,
-      anecdotes: el.querySelector("#anecdotes-input").value.trim() || "",
-      memories: memories.filter(m => m.text.trim() !== ""),
-      facts:    facts.filter(f => f.text.trim() !== ""),
-    });
-
-    showToast("已保存");
-    location.hash = "#/yaji";
+    // 使用 try...catch 捕获保存报错，防止弹全局报错
+    try {
+      await updateCharacter(characterId, {
+        name,
+        nickname: el.querySelector("#nickname-input").value.trim() || null,
+        du: el.querySelector("#du-input").value.trim() || null,
+        duMotto: el.querySelector("#dumotto-input").value.trim() || null,
+        age: el.querySelector("#age-input").value.trim() || null,
+        bio: el.querySelector("#bio-input").value.trim() || "",
+        avatarId,
+        portraitId,
+        anecdotes: el.querySelector("#anecdotes-input").value.trim() || "",
+        memories: memories.filter(m => m.text.trim() !== ""),
+        facts:    facts.filter(f => f.text.trim() !== ""),
+      });
+      showToast("已保存");
+      location.hash = "#/yaji";
+    } catch (e) {
+      console.error("保存失败", e);
+      showToast("保存失败，请查看控制台");
+    }
   };
 
   el.querySelector("#btn-delete").onclick = async () => {

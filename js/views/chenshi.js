@@ -165,39 +165,51 @@ const lunarStr = getLunarDate(now);
   const fileInput = el.querySelector("#daily-bg-upload");
 
   // ==========================================
-  // 👈 点击背景，从绘卷选择图片 (带裁剪 + 多图轮播)
+  // 👈 点击背景，从绘卷选择图片 (带裁剪 + 多图轮播) - 修复版
   // ==========================================
   uploadTrigger.onclick = () => {
     // 1. 调起公共图库，选“插画”
     openImagePicker("illustration", async (imgId) => {
       const img = await db.get("images", imgId);
-      if (img && img.origin && img.origin.data instanceof Blob) {
-        
-        const reader = new FileReader();
-        reader.onload = async (ev) => {
-          const base64 = ev.target.result;
+      if (!img) return;
+
+      let imageSrc = null;
+      // 👈 完美兼容：支持用户上传的 Base64 字符串，也支持种子图的本地路径
+      if (typeof img.origin?.data === "string" && img.origin.data.startsWith("data:image/")) {
+        imageSrc = img.origin.data;
+      } else if (img.base64 && img.base64.startsWith("data:image/")) {
+        imageSrc = img.base64;
+      } else if (img.base64 && img.base64.startsWith("assets/")) {
+        // 如果选的是种子图，直接拿来用（其实种子图没必要裁剪，但为了统一逻辑）
+        imageSrc = img.base64;
+      }
+
+      if (imageSrc) {
+        // 2. 调起裁剪框
+        showCropModal(imageSrc, async (croppedBase64) => {
+          // 3. 因为 showCropModal 内部已经调用过 compressImage 压缩过了，我们就不重复压缩了
+          // 直接把裁剪好的 Base64 存起来即可，防止内存溢出
           
-          // 2. 调起裁剪框
-          showCropModal(base64, async (croppedBase64) => {
-            // 3. 压缩图片（限制在 1MB 内，防止 localStorage 爆炸）
-            const { compressImage } = await import("../ui/image-cropper.js");
-            const compressedBase64 = await compressImage(croppedBase64, 1);
-
-            // 4. 存入轮播数组（最多保留 3 张图）
-            let coverList = JSON.parse(localStorage.getItem("chenshi_daily_covers") || "[]");
-            // 判断是否重复，不重复才加进去
-            if (!coverList.includes(compressedBase64)) {
-              coverList.unshift(compressedBase64); // 把最新的放在最前面
-              if (coverList.length > 3) coverList.pop(); // 超过 3 张就删掉最旧的
+          // 4. 存入轮播数组（最多保留 3 张图）
+          let coverList = JSON.parse(localStorage.getItem("chenshi_daily_covers") || "[]");
+          if (!coverList.includes(croppedBase64)) {
+            coverList.unshift(croppedBase64); // 把最新的放在最前面
+            if (coverList.length > 3) coverList.pop(); // 超过 3 张就删掉最旧的
+            
+            // 存进 localStorage 防止刷新丢失
+            try {
               localStorage.setItem("chenshi_daily_covers", JSON.stringify(coverList));
+            } catch (e) {
+              showToast("本地存储空间不足，图片可能太大");
             }
+          }
 
-            // 5. 立即显示这张新图
-            bgEl.style.backgroundImage = `url('${compressedBase64}')`;
-            showToast("画卷已更新");
-          });
-        };
-        reader.readAsDataURL(img.origin.data);
+          // 5. 立即显示这张新图
+          bgEl.style.backgroundImage = `url('${croppedBase64}')`;
+          showToast("画卷已更新");
+        });
+      } else {
+        showToast("这张图片格式不支持");
       }
     });
   };
@@ -345,10 +357,16 @@ const lunarStr = getLunarDate(now);
   }
 
   // ==========================================
-  // 👈 轮播引擎
+  // 👈 轮播引擎 (加入容错处理)
   // ==========================================
-  let coverList = JSON.parse(localStorage.getItem("chenshi_daily_covers") || "[]");
-  if (coverList.length > 0) {
+  let coverList = [];
+  try {
+    coverList = JSON.parse(localStorage.getItem("chenshi_daily_covers") || "[]");
+  } catch (e) {
+    console.error("读取轮播图失败", e);
+  }
+
+  if (Array.isArray(coverList) && coverList.length > 0) {
     let currentImgIndex = 0;
     // 初始显示第一张
     bgEl.style.backgroundImage = `url('${coverList[0]}')`;
@@ -360,7 +378,7 @@ const lunarStr = getLunarDate(now);
         // 加上淡入淡出过渡效果
         bgEl.style.transition = "background-image 0.8s ease-in-out";
         bgEl.style.backgroundImage = `url('${coverList[currentImgIndex]}')`;
-      }, 5000); // 5000 毫秒 = 5 秒，你可以随意改
+      }, 5000);
     }
   }
 

@@ -107,10 +107,14 @@ export async function yajiNewView() {
         const { compressImage } = await import("../ui/image-cropper.js");
         const compressedBase64 = await compressImage(rawBase64, 1);
         
-        const res = await fetch(compressedBase64);
-        portraitBlob = await res.blob();
+        // ❌ 删掉这两行
+        // const res = await fetch(compressedBase64);
+        // tempPortraitBlob = await res.blob();
         
-        portraitPreview.innerHTML = `<img src="${compressedBase64}" style="width:100%;height:100%;object-fit:cover;">`;
+        // ✅ 改成直接存 Base64 字符串
+        tempPortraitBlob = compressedBase64; 
+        
+        portraitPreview.innerHTML = `<img src="${compressedBase64}" style="width:100%;height:100%;object-fit:cover">`;
       } catch (err) {
         console.error(err);
         showToast("图片处理失败");
@@ -186,16 +190,10 @@ avatarInput.onchange = async (e) => {
   // ========== 保存 ==========
   el.querySelector("#btn-save").onclick = async () => {
     const name = el.querySelector("#name-input").value.trim();
-    if (!name) {
-      alert("请输入角色名");
-      return;
-    }
+    if (!name) { alert("请输入角色名"); return; }
 
     const ownerId = state.currentUserId;
-    if (!ownerId) {
-      alert("请先创建身份");
-      return;
-    }
+    if (!ownerId) { alert("请先创建身份"); return; }
 
     let portraitId = null;
     if (portraitBlob) {
@@ -207,26 +205,26 @@ avatarInput.onchange = async (e) => {
       avatarId = await saveToGallery(avatarBlob, "avatar");
     }
 
-    await createCharacter(ownerId, {
-      name,
-      nickname: el.querySelector("#nickname-input").value.trim() || null,
-      du: el.querySelector("#du-input").value.trim() || null,
-      duMotto: el.querySelector("#dumotto-input").value.trim() || null,
-      age: el.querySelector("#age-input").value.trim() || null,
-      bio: el.querySelector("#bio-input").value.trim() || "",
-
-      // 新增三块
-      anecdotes: el.querySelector("#anecdotes-input").value.trim() || "",
-      memories: memories.filter(m => m.text.trim() !== ""),
-      facts: facts.filter(f => f.text.trim() !== ""),
-
-      portraitId,
-      avatarId,
-    });
-
-    location.hash = "#/yaji";
+    try {
+      await createCharacter(ownerId, {
+        name,
+        nickname: el.querySelector("#nickname-input").value.trim() || null,
+        du: el.querySelector("#du-input").value.trim() || null,
+        duMotto: el.querySelector("#dumotto-input").value.trim() || null,
+        age: el.querySelector("#age-input").value.trim() || null,
+        bio: el.querySelector("#bio-input").value.trim() || "",
+        anecdotes: el.querySelector("#anecdotes-input").value.trim() || "",
+        memories: memories.filter(m => m.text.trim() !== ""),
+        facts: facts.filter(f => f.text.trim() !== ""),
+        portraitId,
+        avatarId,
+      });
+      location.hash = "#/yaji";
+    } catch (e) {
+      console.error("创建失败", e);
+      alert("创建失败：" + e.message);
+    }
   };
-
   return el;
 }
 

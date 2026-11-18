@@ -82,20 +82,20 @@ export async function yajiView() {
 
       <!-- ===== 右上角：操作菜单 ===== -->
       <div style="position: absolute; top: 24px; right: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-        <div class="yaji-frame" id="btn-profile" style="padding: 6px 18px; cursor: pointer;">
-          <span style="font-family: var(--font-title); font-size: 14px; letter-spacing: 2px; color: var(--ink);">资 料</span>
+        <div class="yaji-frame" id="btn-profile" style="padding: 6px 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; min-width: 72px;">
+          <span style="font-family: var(--font-title); font-size: 14px; letter-spacing: 2px; color: var(--ink); white-space: nowrap; writing-mode: horizontal-tb;">资 料</span>
         </div>
         
-        <div class="yaji-frame" id="btn-interact" style="padding: 6px 18px; cursor: pointer;">
-          <span style="font-family: var(--font-title); font-size: 14px; letter-spacing: 2px; color: var(--ink);">互 动</span>
+        <div class="yaji-frame" id="btn-interact" style="padding: 6px 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; min-width: 72px;">
+          <span style="font-family: var(--font-title); font-size: 14px; letter-spacing: 2px; color: var(--ink); white-space: nowrap; writing-mode: horizontal-tb;">互 动</span>
         </div>
 
-        <!-- 互动展开的二级菜单 -->
+        <!-- 互动展开的二级菜单（顺便把这里也强制横排，防止出问题） -->
         <div id="sub-menu" style="display: none; flex-direction: column; align-items: flex-end; gap: 6px; margin-top: 4px;">
-          <div class="yaji-sub-btn" data-act="chat">闲 谈</div>
-          <div class="yaji-sub-btn" data-act="gift">赠 礼</div>
-          <div class="yaji-sub-btn" data-act="travel">同 游</div>
-          <div class="yaji-sub-btn" data-act="letter">书 信</div>
+          <div class="yaji-sub-btn" data-act="chat" style="white-space: nowrap;">闲 谈</div>
+          <div class="yaji-sub-btn" data-act="gift" style="white-space: nowrap;">赠 礼</div>
+          <div class="yaji-sub-btn" data-act="travel" style="white-space: nowrap;">同 游</div>
+          <div class="yaji-sub-btn" data-act="letter" style="white-space: nowrap;">书 信</div>
         </div>
       </div>
 

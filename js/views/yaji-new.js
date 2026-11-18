@@ -96,32 +96,26 @@ export async function yajiNewView() {
   const portraitPreview = el.querySelector("#portrait-preview");
   const portraitInput = el.querySelector("#portrait-input");
   portraitPreview.onclick = () => portraitInput.click();
-  portraitInput.onchange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const rawBase64 = ev.target.result;
-      try {
-        const { compressImage } = await import("../ui/image-cropper.js");
-        const compressedBase64 = await compressImage(rawBase64, 1);
-        
-        // ❌ 删掉这两行
-        // const res = await fetch(compressedBase64);
-        // tempPortraitBlob = await res.blob();
-        
-        // ✅ 改成直接存 Base64 字符串
-        tempPortraitBlob = compressedBase64; 
-        
-        portraitPreview.innerHTML = `<img src="${compressedBase64}" style="width:100%;height:100%;object-fit:cover">`;
-      } catch (err) {
-        console.error(err);
-        showToast("图片处理失败");
-      }
-    };
-    reader.readAsDataURL(file);
+// ✅ 修复后的立绘onchange（保留base64方案！）
+portraitInput.onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    const rawBase64 = ev.target.result;
+    try {
+      const { compressImage } = await import("../ui/image-cropper.js");
+      const compressedBase64 = await compressImage(rawBase64, 1);
+      // 重点：变量名改成 portraitBlob，不再是 tempPortraitBlob
+      portraitBlob = compressedBase64; 
+      portraitPreview.innerHTML = `<img src="${compressedBase64}" style="width:100%;height:100%;object-fit:cover">`;
+    } catch (err) {
+      console.error(err);
+      showToast("图片处理失败");
+    }
   };
+  reader.readAsDataURL(file);
+};
 
   // 头像上传
   const avatarPreview = el.querySelector("#avatar-preview");

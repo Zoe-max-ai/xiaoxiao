@@ -48,13 +48,15 @@ import { wangshiGameReadView } from "./views/wangshi-game-read.js";
 import { guichuInventoryView } from "./views/guichu-inventory.js";
 import { guichuGamesView } from "./views/tanmi-games.js";
 import { guichuGamesPlayView } from "./views/tanmi-games-play.js";
+import { getImageUrl } from "./services/seed-service.js";
+
 
 window.addEventListener("unhandledrejection", (event) => {
   alert("未处理的异步错误：\n" + (event.reason?.message || event.reason));
   console.error("异步错误:", event.reason);
 });
 
-// 【重点改动：路由先全部注册好！】
+// 先注册所有路由（这部分不动，注册必须提前）
 register("welcome", welcomeView, { topbar: false, tabbar: false });
 register("user/create", userCreateView, { topbar: false, tabbar: false });
 register("chenshi", chenshiView);
@@ -98,10 +100,9 @@ register("guichu/inventory", guichuInventoryView, { topbar: false });
 register("tanmi/games", guichuGamesView, { topbar: false });
 register("tanmi/games/play", guichuGamesPlayView, { topbar: false, tabbar: false });
 
-// 立刻启动路由！先把页面外壳跑起来，不会空白
-start();
+// ========== 删掉外面单独的 start(); ==========
+// start(); 删掉这一行！
 
-// 后台慢慢加载数据库、素材，不再阻塞页面渲染
 async function bootDBAndAssets() {
   try {
     await openDB();
@@ -109,36 +110,32 @@ async function bootDBAndAssets() {
     initParticleEngine();
     await initTheme();
     await initFontSettings();
-
     const settings = await db.get("settings", "init");
-
-    async function restoreUser() {
+async function restoreUser() {
+  try {
+    if (!settings?.userId) return;
+    const user = await db.get("users", settings.userId);
+    if (!user) return;
+    setCurrentUser(user);
+    await initPresetWorldbook(db, user.id);
+    
+    const nameEl = document.getElementById("user-name");
+    if (nameEl) nameEl.textContent = user.name;
+    if (user.avatarId) {
+      const avatarEl = document.getElementById("user-avatar");
       try {
-        if (!settings?.userId) return;
-        const user = await db.get("users", settings.userId);
-        if (!user) return;
-        setCurrentUser(user);
-        await initPresetWorldbook(db, user.id);
-        
-        const nameEl = document.getElementById("user-name");
-        if (nameEl) nameEl.textContent = user.name;
-        if (user.avatarId) {
-          const avatarEl = document.getElementById("user-avatar");
-          const img = await db.get("images", user.avatarId);
-          
-          if (img && img.thumb && img.thumb.data) {
-            try {
-              const url = URL.createObjectURL(img.thumb.data);
-              if (avatarEl) avatarEl.src = url;
-            } catch (e) {
-              console.warn("生成头像链接失败，可能是导入的格式有误", e);
-            }
-          }
+        const src = await getImageUrl(user.avatarId, true);
+        if (src) {
+          avatarEl.src = src;
         }
       } catch (e) {
-        console.error("[main] restoreUser 失败:", e);
+        console.warn("顶部用户头像加载失败", e);
       }
     }
+  } catch (e) {
+    console.error("[main] restoreUser 失败:", e);
+  }
+}
 
     if (!settings?.initialized) {
       location.hash = "#/welcome";
@@ -148,9 +145,12 @@ async function bootDBAndAssets() {
         location.hash = "#/chenshi";
       }
     }
+    // ✅ 在这里，等身份恢复完成，再启动路由！
+    start();
   } catch(err) {
     alert("数据库初始化失败，存档功能不可用：" + err.message);
     console.error(err);
   }
 }
 bootDBAndAssets();
+

@@ -239,15 +239,14 @@ function openImportSelectModal(data) {
           <input type="checkbox" data-gid="${g.id}" checked>
           <span class="data-group-name">${g.name}</span>
         </label>
-<div style="font-size:11px; color:var(--cinnabar); padding-left:24px; margin-bottom:4px;">⚠️ 勾选会覆盖当前已有的封面缓存</div>
       `).join("")}
     </div>
-    <!-- ========== 新增这一行复选框 ========== -->
     ${data.localStorageData ? `
     <label class="data-group-item" style="margin-top:8px;">
       <input type="checkbox" id="import-localstorage">
       <span class="data-group-name">同步恢复本地缓存（封面、自定义图）</span>
     </label>
+    <div style="font-size:11px; color:var(--cinnabar); padding-left:24px; margin-bottom:4px;">⚠️ 勾选会覆盖当前已有的封面缓存</div>
     ` : ""}
     <div class="data-modal-sub" style="margin-top:12px;">导入方式</div>
     <div class="data-radio-list">
@@ -284,7 +283,6 @@ function openImportSelectModal(data) {
     showToast("正在导入…");
     const stats = await importData(data, groupIds, conflictMode);
 
-    // ========== 在这里单独处理 localStorage 导入 ==========
     if (importLocalChecked && data.localStorageData) {
       for (const [key, value] of Object.entries(data.localStorageData)) {
         localStorage.setItem(key, value);
@@ -298,6 +296,7 @@ function openImportSelectModal(data) {
     }, 800);
   };
 }
+
 
 
   /* ========== 清除 ========== */

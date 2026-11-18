@@ -125,10 +125,17 @@ export async function importPresetCharacters(ownerId) {
   console.log("[preset] 导入完成");
 }
 
-export async function saveToGallery(blob, category) {
+/* ========== 图片处理（改为 Base64 版本，对齐手机端） ========== */
+export async function saveToGallery(blobOrBase64, category) {
   const id = uid("img");
-  const img = await loadImage(blob);
-  const thumb = await generateThumb(img, 200, 200);
+  
+  // 兼容传入的是 Blob 还是 Base64
+  const base64Str = (typeof blobOrBase64 === "string") 
+    ? blobOrBase64 
+    : await blobToBase64(blobOrBase64);
+
+  const img = await loadImage(base64Str);
+  const thumbB64 = await generateThumbB64(img, 200, 200);
 
   await db.put("images", {
     id,
@@ -136,30 +143,58 @@ export async function saveToGallery(blob, category) {
     category,
     theme: null,
     tags: [],
-    origin: { data: blob, mime: blob.type, width: img.width, height: img.height, size: blob.size },
-    thumb: { data: thumb, width: 200, height: 200, size: thumb.size },
+    origin: { 
+      data: base64Str, 
+      mime: getMimeFromB64(base64Str), 
+      width: img.width, 
+      height: img.height 
+    },
+    thumb: { 
+      data: thumbB64, 
+      width: 200, 
+      height: 200 
+    },
     createdAt: Date.now(),
   });
   return id;
 }
 
-function loadImage(blob) {
+// 辅助：把 Blob 转成 Base64 字符串（防止旧数据报错）
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+// 加载图片
+function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = reject;
-    img.src = URL.createObjectURL(blob);
+    img.src = src;
   });
 }
 
-function generateThumb(img, maxW, maxH) {
+// 生成缩略图（Base64）
+function generateThumbB64(img, maxW, maxH) {
   return new Promise((resolve) => {
     const canvas = document.createElement("canvas");
     const ratio = Math.min(maxW / img.width, maxH / img.height);
     canvas.width = img.width * ratio;
     canvas.height = img.height * ratio;
-    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(resolve, "image/jpeg", 0.9);
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const b64 = canvas.toDataURL("image/jpeg", 0.7);
+    resolve(b64.replace(/\s/g, ""));
   });
 }
 
+// 提取图片类型
+function getMimeFromB64(b64) {
+  const m = b64.match(/data:(.*?);/);
+  return m ? m[1] : "image/jpeg";
+}

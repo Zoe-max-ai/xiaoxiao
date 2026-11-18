@@ -95,75 +95,34 @@
   font-size: 13px;
   letter-spacing: 2px;
 }
-/* 消息行 */
+/* 消息行：头像单独一行，气泡另起一行 */
 .chat-row {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
+  gap: 4px;
   max-width: 100%;
 }
 .chat-row.me {
   align-self: flex-end;
-  flex-direction: row-reverse;
+  align-items: flex-end;
 }
 .chat-row.he {
   align-self: flex-start;
+  align-items: flex-start;
 }
-/* 头像容器（带框）【重点修复头像框贴图】 */
-.chat-avatar-wrap {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  flex-shrink: 0;
-  flex-grow: 0;
-  align-self: flex-start;
-  /* 强制新建渲染层，保证::after头像框图片正常渲染 */
-  -webkit-transform: translateZ(1px);
-  transform: translateZ(1px);
-}
-.chat-avatar-wrap::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 44px;
-  height: 44px;
-  background: var(--avatar-frame) no-repeat center/contain;
-  pointer-events: none;
-  z-index: 2;
-  /* 移动端WebKit兼容：背景图强制渲染 */
-  -webkit-transform: translateZ(2px);
-  transform: translateZ(2px);
-  backface-visibility: hidden;
-}
-.chat-avatar {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: var(--paper-soft);
+/* 头像行：头像靠边 */
+.chat-avatar-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  color: var(--ink-dim);
-  font-family: var(--font-title);
-  z-index: 1;
-  -webkit-transform: translateZ(1px);
-  transform: translateZ(1px);
 }
-.chat-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.chat-row.he .chat-avatar-row {
+  justify-content: flex-start;
 }
-/* 气泡 */
+.chat-row.me .chat-avatar-row {
+  justify-content: flex-end;
+}
+/* 【还原！保留原来的纵向容器，放引用、气泡、时间】 */
 .chat-bubble-wrap {
   display: flex;
   flex-direction: column;
@@ -175,23 +134,24 @@
 .chat-row.me .chat-bubble-wrap {
   align-items: flex-end;
 }
+.chat-row.he .chat-bubble-wrap {
+  align-items: flex-start;
+}
+/* 核心修复：气泡在flex子项里，禁止被挤压！ */
 .chat-bubble {
-  display: inline-block;
-  width: fit-content;
+  /* 关键：max-content，短句自动贴合文字宽度，不会被flex压扁 */
+  width: max-content;
   max-width: 100%;
-  padding: 10px 14px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--paper-soft);
   font-size: 14px;
-  line-height: 1.6;
-  word-break: break-word;
-  letter-spacing: 1px;
-  box-sizing: border-box;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  position: relative;
-  /* 关键：给气泡提升渲染层，让角落贴图不丢失 */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  backface-visibility: hidden;
+  line-height: 1.5;
 }
 .chat-row.me .chat-bubble {
   background: var(--bubble-me-bg);
@@ -204,15 +164,36 @@
   background: var(--bubble-he-bg);
   color: var(--bubble-he-text);
   border: 1px solid var(--bubble-he-border);
-  border-radius: 4px 16px 4px 4px;
+  border-radius: 4px 0 16px 4px;
   box-shadow: var(--bubble-shadow);
 }
-/* 气泡角落装饰纹样 ::before 【重点修复气泡贴图】 */
+/* 左侧he气泡：仅右下角保留圆角，其余三个角全部直角 */
+.chat-row.he .chat-bubble {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 16px !important;
+}
+/* 时间放到气泡下面，对齐 */
+.chat-time {
+  font-size: 11px;
+  color: var(--ink-dim);
+  margin-top: 2px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.chat-row.me .chat-time {
+  text-align: right;
+}
+.chat-row.he .chat-time {
+  text-align: left;
+}
+/* 保留气泡角落纹样 - 我方（me） */
 .chat-row.me .chat-bubble::before {
   content: "";
   position: absolute;
   top: -2px;
-  left: -2px;
+  right: -2px; left:auto;
   width: 16px;
   height: 16px;
   background-image: var(--bubble-me-deco);
@@ -222,16 +203,16 @@
   opacity: 0.6;
   pointer-events: none;
   z-index: 3;
-  /* 移动端贴图必加：GPU提升 */
   -webkit-transform: translateZ(3px);
   transform: translateZ(3px);
   backface-visibility: hidden;
 }
+/* 保留气泡角落纹样 - 对方（he）【这里改好了！印章贴气泡内部最右侧】 */
 .chat-row.he .chat-bubble::before {
   content: "";
   position: absolute;
-  bottom: -2px;
-  right: -2px;
+  top:-2px;
+  left:-2px; right:auto;
   width: 16px;
   height: 16px;
   background-image: var(--bubble-he-deco);
@@ -245,47 +226,50 @@
   transform: translateZ(3px);
   backface-visibility: hidden;
 }
-/* 气泡尖角 ::after */
-.chat-row.me .chat-bubble::after {
-  content: "";
-  position: absolute;
-  bottom: -6px;
-  right: 12px;
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid var(--bubble-me-bg);
-  z-index: 2;
-  -webkit-transform: translateZ(2px);
-  transform: translateZ(2px);
+.chat-row.me, .chat-row.he {
+  overflow: visible;
 }
+.chat-bubble {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  max-width: 24em; /* 长文本的最大宽度，长句子到这里换行 */
+}
+.chat-bubble.single-line {
+  max-width: unset; /* 短句：取消宽度上限，气泡自适应文字长度 */
+  white-space: nowrap;
+}
+/* 去掉气泡上指向时间的小三角 */
+.chat-row.me .chat-bubble::after,
 .chat-row.he .chat-bubble::after {
-  content: "";
-  position: absolute;
-  bottom: -6px;
-  left: 12px;
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid var(--bubble-he-bg);
-  z-index: 2;
-  -webkit-transform: translateZ(2px);
-  transform: translateZ(2px);
+  display: none;
 }
-.chat-time {
-  font-size: 10px;
+/* 头像圆框 */
+.chat-avatar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--paper-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
   color: var(--ink-dim);
-  letter-spacing: 1px;
-  margin-top: 4px;
-  opacity: 0.7;
+  font-family: var(--font-title);
+  border: 1px solid var(--line-light);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
 }
-.chat-row.me .chat-time {
-  text-align: right;
-}
-.chat-row.he .chat-time {
-  text-align: left;
+/* 头像图片必须等比裁切进圆框 */
+.chat-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
 }
 /* 撤回消息 */
 .chat-row.revoked .chat-revoked {
@@ -341,13 +325,13 @@
   color: var(--ink-dim);
   padding: 12px 0;
 }
-/* 选中禁止 */
+/* 选中放开，支持复制台词 */
 .chat-bubble,
 .chat-quote,
 .chat-revoked {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 /* 聊天图片 */
 .chat-image-msg {
@@ -529,11 +513,10 @@
   color: var(--paper);
   font-weight: 600;
 }
-/* 打字机遮罩效果（整块滑入）
-⚠️ 注意：clip-path会创建层叠上下文，如果贴图还是偶尔消失，可以给typewriter-active单独加一条补丁，或者备选：换成opacity动画 */
+/* 打字机遮罩效果（整块滑入） */
 .chat-bubble.typewriter-active {
   clip-path: inset(0 100% 0 0);
-  animation: typewriter-mask 1.5s steps(40, end) forwards;
+  animation: typewriter-mask 3s steps(60, end) forwards;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
 }
@@ -615,4 +598,23 @@
   font-size: 16px;
   color: var(--ink-dim);
   flex-shrink: 0;
+}
+/* 滚动条美化，和古风风格统一 */
+.chat-timeline::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-timeline::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-timeline::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+.chat-timeline::-webkit-scrollbar-thumb:hover {
+  background: var(--cinnabar);
+}
+/* 打字机光标闪烁（可选） */
+@keyframes blink-cursor {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
 }

@@ -1,7 +1,7 @@
 import { db, STORES } from "../core/db.js";
 import { uid } from "../core/uid.js";
 const SEED_MANIFEST_URL = "assets/seed/seed-manifest.json";
-const SEED_PREFIX = "/assets/seed/";
+const SEED_PREFIX = "assets/seed/";  // 👈 把最前面的斜杠 / 删掉！
 /**
  * 检查并导入素材清单（只导入元信息，不再存Blob！）
  * 首次启动：导入图片元数据到images表，图片本体仍然走静态资源

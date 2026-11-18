@@ -15,10 +15,37 @@ export async function getAllImages() {
       if (img.origin?.data && typeof img.origin.data !== "string") {
         img.origin.data = "";
       }
+
+      // ==========================================
+      // 👇 新增逻辑：给种子图开绿色通道，直接拼本地路径
+      // ==========================================
+      let finalBase64 = img.origin?.data || "";
+      let finalThumb = img.thumb?.data || ""; // 顺手把缩略图也处理了
+      
+      if (img.isSeed || img.id.startsWith("seed_")) {
+        let localPath = "";
+        if (img.seedFile) {
+          localPath = `assets/seed/${img.seedFile}`;
+        } else {
+          // 兜底逻辑：假设 id 是 seed_分类_文件名，比如 seed_avatar_fangchengyi
+          const parts = img.id.split("_");
+          const category = parts[1] || "deco";
+          const filename = parts.slice(2).join("_");
+          localPath = `assets/seed/${category}/${filename}`;
+        }
+        finalBase64 = localPath; // 覆盖原来的 Base64
+        finalThumb = localPath;  // 缩略图也用本地路径，手机加载极度丝滑
+      }
+
       return {
         ...img,
-        // 新增：对齐上层页面预期的 base64 字段，值为原图origin.data
-        base64: img.origin?.data || "",
+        // 用处理后的 finalBase64 替代原来的 img.origin?.data
+        base64: finalBase64,
+        // 如果有用到 thumb.data 的地方，也顺便覆盖
+        thumb: {
+          ...(img.thumb || {}),
+          data: finalThumb
+        },
         name: img.name || inferName(img),
         isSeed: !!img.isSeed,
       };

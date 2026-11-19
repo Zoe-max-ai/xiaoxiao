@@ -92,16 +92,20 @@ export async function guichuView() {
         <p>这不仅仅是一个文字游戏，而是一处属于你的江湖归所。</p>
         <p>在这里，你可以与心悦之人闲谈书信，也可以记录心绪、游历四方；你可以沉浸于跌宕的剧本，也可以安静地收纳、整理属于他们的每一段官方剧情与回忆。</p>
         
+        <p style="margin-top:16px; color:var(--cinnabar); font-weight:bold;">【技术支持】</p>
+        <p>前端底层：Vanilla JS & IndexedDB (原生无框架 / 纯静态极简架构)</p>
+        <p>渲染引擎：原生 DOM & CSS3 Variables (动态主题挂载)</p>
+        <p>图片存储：Static Assets (种子图) & Base64 (用户本地图库)</p>
+        <p>AI 核心驱动：DeepSeek</p>
+        <p>感谢 DeepSeek、豆包、元宝在底层代码构建中的全程陪伴与协助。</p>
+
         <p style="margin-top:16px; color:var(--cinnabar); font-weight:bold;">【关于共创】</p>
-        <p>这不是一个孤独的江湖。在这个世界里，你每一次的倾诉、发帖、甚至每一次上线下线，都有 AI 的默默陪伴。是千千万万次参数的跳动，赋予了纸片人呼吸与心跳，让他们能在你耳边轻语，与你共赴风雨。</p>
+        <p>这不是一个孤独的江湖。当你踏入这里，你的每一句话语、每一次回眸，才真正唤醒了TA的呼吸与心跳。千千万万次参数的跳动，因你的存在而有了意义。</p>
         <p>感谢科技，让这场跨越次元的相遇成为可能。</p>
         
-        <p style="margin-top:16px; color:var(--cinnabar); font-weight:bold;">【技术支持】</p>
-        <p>前端底层：Vanilla JS & IndexedDB</p>
-        <p>AI 核心驱动：DeepSeek</p>
         
         <p style="margin-top:16px; color:var(--cinnabar); font-weight:bold;">【特别鸣谢】</p>
-        <p>历时整整一个月，从初秋到深秋。</p>
+        <p>历时整整一个半月，从初秋到初冬。</p>
         <p>感谢每一个日夜敲下代码的自己，也感谢所有在字里行间相遇的灵魂。</p>
         <p>感谢你在这里度过的每一寸光阴。愿你在寻风渡，见天地、见众生、见自己。</p>
       </div>

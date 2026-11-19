@@ -63,10 +63,22 @@ export async function getImagesByCategory(category) {
 /**
  * 上传新图（现在接收 base64 字符串）
  */
-export async function uploadImage({ base64, category, name }) {
+/**
+ * 上传新图（完美兼容传入的 base64 和现成的 thumb）
+ */
+export async function uploadImage({ base64, thumb, category, name }) {
   const id = uid("img");
-  const img = await loadImage(base64);
-  const thumbB64 = await generateThumbB64(img, 200, 300);
+  
+  // 如果外部没传 thumb，我们就自己生成
+  let thumbB64 = thumb?.data;
+  if (!thumbB64) {
+    const img = await loadImage(base64);
+    thumbB64 = await generateThumbB64(img, 200, 300);
+  }
+
+  // 清洗 base64 字符串里的换行和空格，防止手机端解析失败
+  const cleanBase64 = base64.replace(/\s/g, "");
+
   await db.put("images", {
     id,
     ownerId: null,
@@ -77,13 +89,13 @@ export async function uploadImage({ base64, category, name }) {
     seedFile: null,
     isSeed: false,
     origin: {
-      data: base64,
-      mime: getMimeFromB64(base64),
-      width: img.width,
-      height: img.height,
+      data: cleanBase64, // 👈 用清洗后的
+      mime: getMimeFromB64(cleanBase64),
+      width: 0, // 不再强制获取，减少加载时间
+      height: 0,
     },
     thumb: {
-      data: thumbB64,
+      data: thumbB64.replace(/\s/g, ""),
       width: 200,
       height: 300,
     },

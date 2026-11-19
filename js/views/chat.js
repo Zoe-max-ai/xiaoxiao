@@ -429,95 +429,134 @@ async function buildSystemPrompt(ownerId, targetId, mode, displayName, character
   return prompt;
 }
 
-function renderMessageHtml(m) {
-  const isMe = m.fromType === "user";
-  let msgAvatar = null;
-  let msgName = "";
-  if (isMe) {
-    msgAvatar = userAvatarUrl;
-    msgName = "我";
-  } else if (mode === "group") {
-    const info = memberInfo[m.fromId];
-    msgAvatar = info?.avatarUrl;
-    msgName = info?.name || "?";
-  } else {
-    msgAvatar = avatarUrl;
-    msgName = displayName;
-  }
-  const avatarHtml = msgAvatar
-    ? `<img src="${msgAvatar}" alt="">`
-    : `<span>${escapeHtml(msgName.charAt(0))}</span>`;
-  const timeHtml = settings.timestamps
-    ? `<div class="chat-time">${formatTime(m.createdAt)}</div>`
-    : "";
-  const quoteHtml = m.quote
-    ? `<div class="chat-quote">
-         <div class="chat-quote-author">${escapeHtml(m.quote.fromName)}</div>
-         <div class="chat-quote-text">${escapeHtml(m.quote.content)}</div>
-       </div>`
-    : "";
-  if (m.revoked) {
-    return `
-      <div class="chat-row ${isMe ? "me" : "he"} revoked" data-mid="${m.id}">
-        <div class="chat-avatar-row">
-          <div class="chat-avatar-wrap">
-            <div class="chat-avatar">${avatarHtml}</div>
+  function renderMessageHtml(m) {
+    const isMe = m.fromType === "user";
+    let msgAvatar = null;
+    let msgName = "";
+
+    if (isMe) {
+      msgAvatar = userAvatarUrl;
+      msgName = "我";
+    } else if (mode === "group") {
+      const info = memberInfo[m.fromId];
+      msgAvatar = info?.avatarUrl;
+      msgName = info?.name || "?";
+    } else {
+      msgAvatar = avatarUrl;
+      msgName = displayName;
+    }
+
+    const avatarHtml = msgAvatar
+      ? `<img src="${msgAvatar}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+      : `<span>${escapeHtml(msgName.charAt(0))}</span>`;
+      
+    const timeHtml = settings.timestamps
+      ? `<div class="chat-time">${formatTime(m.createdAt)}</div>`
+      : "";
+
+    const quoteHtml = m.quote
+      ? `<div class="chat-quote">
+           <div class="chat-quote-author">${escapeHtml(m.quote.fromName)}</div>
+           <div class="chat-quote-text">${escapeHtml(m.quote.content)}</div>
+         </div>`
+      : "";
+
+    // 👈 提前处理撤回逻辑，防止引用未定义的变量
+    if (m.revoked) {
+      return `
+        <div class="chat-row ${isMe ? "me" : "he"} revoked" data-mid="${m.id}">
+          <div class="chat-avatar-row">
+            <div class="chat-avatar-wrap" style="position: relative;">
+              <div class="chat-avatar">${avatarHtml}</div>
+              <!-- 撤回消息也有头像框 -->
+              <div style="position: absolute; inset: -2px; background-image: var(--theme-avatar-frame); background-size: contain; background-position: center; background-repeat: no-repeat; pointer-events: none; z-index: 2;"></div>
+            </div>
+          </div>
+          <div class="chat-bubble-wrap">
+            <div class="chat-revoked">${isMe ? "你" : escapeHtml(msgName.charAt(0))}撤回了一句话</div>
           </div>
         </div>
-        <div class="chat-bubble-wrap">
-          <div class="chat-revoked">${isMe ? "你" : escapeHtml(msgName)}撤回了一句话</div>
+      `;
+    }
+
+    const isImage = m.contentType === "image";
+    let bubbleContentHtml = "";
+    let singleClass = ""; // 👈 统一在这里声明
+
+    if (isImage) {
+      if (m.imageData) {
+        bubbleContentHtml = `
+          <div class="chat-image-msg">
+            <img src="${m.imageData}" alt="图片" class="chat-thumb" data-full="${m.imageData}">
+          </div>
+        `;
+      } else if (m.content === "[图片已清理]") {
+        bubbleContentHtml = `<div class="chat-bubble" style="color:var(--ink-dim);">[图片已清理]</div>`;
+      } else {
+        const safeImgText = m.content;
+        singleClass = safeImgText.length <= 18 ? "single-line" : "";
+        bubbleContentHtml = `<div class="chat-bubble ${singleClass}">${escapeHtml(safeImgText)}</div>`;
+      }
+    } else {
+      let safeContent = m.content.replace(/\*([^*]+)\*/g, '（$1）');
+      safeContent = safeContent.replace(/\*/g, ''); 
+      
+      singleClass = safeContent.length <= 18 ? "single-line" : "";
+      const isNewMessage = (Date.now() - m.createdAt) < 15000;
+      const isTypewriter = settings.typewriter !== false && m.fromType !== "user" && isNewMessage;
+
+      if (isTypewriter) {
+        bubbleContentHtml = `<div class="chat-bubble ${singleClass}" id="typewriter-${m.id}" data-text="${escapeHtml(safeContent)}"></div>`;
+      } else {
+        bubbleContentHtml = `<div class="chat-bubble ${singleClass}">${escapeHtml(safeContent)}</div>`;
+      }
+    }
+
+    // 👈 最终渲染，统一加上头像框和双向贴纸
+    return `
+      <div class="chat-row ${isMe ? "me" : "he"}" data-mid="${m.id}">
+        
+        <!-- 头像区域：外面套框（适应你调大的头像尺寸） -->
+        <div class="chat-avatar-row">
+          <!-- 1. 外层容器加大到 48px -->
+          <div class="chat-avatar-wrap" style="position: relative; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+            
+            <!-- 2. 你的原头像（如果是 44px 觉得大了或者小了，可以自己微调这个数字） -->
+            <div class="chat-avatar" style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #b8b0a0; color: #fff; font-size: 16px;">
+              ${avatarHtml}
+            </div>
+            
+            <!-- 3. 头像框：让它稍微向外扩一圈，刚好包住你的头像。使用 -3px 可以让框稍微比头像大一点点 -->
+            <div style="position: absolute; inset: -3px; background-image: var(--theme-avatar-frame); background-size: contain; background-position: center; background-repeat: no-repeat; pointer-events: none; z-index: 2;"></div>
+          </div>
+        </div>
+
+        <div class="chat-bubble-wrap" style="position: relative;">
+          ${quoteHtml}
+          
+          <!-- 气泡本体和贴纸的组合 -->
+          <div style="position: relative; display: inline-block;">
+            ${bubbleContentHtml}
+            
+            <!-- 👈 双向气泡贴纸：顶部定位 + 镜像翻转 -->
+            <div style="
+              position: absolute; 
+              top: -12px;  
+              ${isMe ? 'left: -12px;' : 'right: -12px;'} 
+              width: 32px; height: 32px;
+              background-image: var(--theme-bubble-sticker);
+              background-size: contain; background-repeat: no-repeat; background-position: center;
+              pointer-events: none; z-index: 10;
+              opacity: 0.9;
+              transform: ${isMe ? 'scaleX(1)' : 'scaleX(-1)'}; /* 👈 核心：对方消息横向翻转 */
+            "></div>
+          </div>
+          
+          ${timeHtml}
         </div>
       </div>
     `;
   }
-  const isImage = m.contentType === "image";
-  let bubbleContentHtml = "";
-  if (isImage) {
-    if (m.imageData) {
-      bubbleContentHtml = `
-        <div class="chat-image-msg">
-          <img src="${m.imageData}" alt="图片" class="chat-thumb" data-full="${m.imageData}">
-        </div>
-      `;
-    } else if (m.content === "[图片已清理]") {
-      bubbleContentHtml = `<div class="chat-bubble" style="color:var(--ink-dim);">[图片已清理]</div>`;
-    } else {
-      // 图片兜底文字，同样加字数判断
-      const safeImgText = m.content;
-      const singleClass = safeImgText.length <= 18 ? "single-line" : "";
-      bubbleContentHtml = `<div class="chat-bubble ${singleClass}">${escapeHtml(safeImgText)}</div>`;
-    }
-  } else {
-    let safeContent = m.content.replace(/\*([^*]+)\*/g, '（$1）');
-    safeContent = safeContent.replace(/\*/g, '');
-    // 核心：18字判断
-const singleClass = safeContent.length <= 18 ? "single-line" : "";
-
-
-    const isNewMessage = (Date.now() - m.createdAt) < 15000;
-    const isTypewriter = settings.typewriter !== false && m.fromType !== "user" && isNewMessage;
-    if (isTypewriter) {
-      bubbleContentHtml = `<div class="chat-bubble ${singleClass}" id="typewriter-${m.id}" data-text="${escapeHtml(safeContent)}"></div>`;
-    } else {
-      bubbleContentHtml = `<div class="chat-bubble ${singleClass}">${escapeHtml(safeContent)}</div>`;
-    }
-  }
-  return `
-    <div class="chat-row ${isMe ? "me" : "he"}" data-mid="${m.id}">
-      <div class="chat-avatar-row">
-        <div class="chat-avatar-wrap">
-          <div class="chat-avatar">${avatarHtml}</div>
-        </div>
-      </div>
-      <div class="chat-bubble-wrap">
-        ${quoteHtml}
-        ${bubbleContentHtml}
-        ${timeHtml}
-      </div>
-    </div>
-  `;
-}
-
 
 
   /* ===== 长按消息 ===== */

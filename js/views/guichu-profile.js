@@ -31,21 +31,30 @@ export async function guichuProfileView() {
 
   el.innerHTML = `
 <div style="text-align: center; margin-bottom: 24px;">
-  <div id="avatar-preview" style="
-    width: 100px;
-    height: 100px;
-    margin: 0 auto;
-    border: 1px dashed var(--line);
-    border-radius: 50%;
-    background: var(--paper-soft);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; color: var(--ink-dim);
-    cursor: pointer;
-    overflow: hidden;
-  ">
-    ${avatarUrl
-      ? `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;">`
-      : "+ 头像"}
+  <!-- 外层容器 -->
+  <div style="position: relative; width: 140px; height: 140px; margin: 0 auto;">
+    
+    <!-- 1. 底层头像：强行把原本自带的边框和背景色全干掉！ -->
+    <div id="avatar-preview" style="
+      position: absolute; inset: 12px; /* 👈 往里缩一点，让水墨框显得更大气 */
+      border: none !important;        /* 👈 强行去掉黑圈 */
+      box-shadow: none !important;    /* 👈 强行去掉黑圈 */
+      background: transparent !important;
+      border-radius: 50%; overflow: hidden;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--ink-dim);
+    ">
+      ${avatarUrl ? `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : "+ 头像"}
+    </div>
+
+    <!-- 2. 顶层头像框：只有水墨框 -->
+    <div style="
+      position: absolute; inset: 0; 
+      background-image: var(--theme-avatar-frame);
+      background-size: contain; background-position: center; background-repeat: no-repeat;
+      pointer-events: none; z-index: 2;
+    "></div>
   </div>
   <input type="file" id="avatar-input" accept="image/*" hidden>
 </div>

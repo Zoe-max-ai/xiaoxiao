@@ -28,7 +28,10 @@ export const THEMES = {
       letter: "bg/bg-letter-qinglv.jpg",
     },
     deco: {
-      boat: "assets/seed/deco/deco-boat-01.png"
+      boat: "assets/seed/deco/deco-boat-01.png",
+      avatarFrame: "assets/seed/frame/frame-qinglv.png",
+      bubbleSticker: "assets/seed/deco/deco-bamboo-02.png",
+      seal: "assets/seed/seal/seal-du.png"
     },
   },
 
@@ -55,8 +58,11 @@ export const THEMES = {
       chat: "bg/bg-chat-songya.jpg",
       letter: "bg/bg-letter-songya.jpg",
     },
-    deco: {
-      boat: "assets/seed/deco/deco-boat-02.png"
+    deco: {  /* 👈 这里补上了漏掉的 deco: { */
+      boat: "assets/seed/deco/deco-boat-02.png",
+      avatarFrame: "assets/seed/frame/frame-songya.png",
+      bubbleSticker: "assets/seed/deco/deco-plum-01.png",
+      seal: "assets/seed/seal/seal-ji.png"
     },
   },
 };

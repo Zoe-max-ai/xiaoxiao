@@ -54,6 +54,18 @@ export async function applyTheme(themeId) {
     if (merged[key]) root.style.setProperty(cssVar, merged[key]);
   }
 
+  // 👈 新增：把素材路径挂载到全局 CSS 变量上
+  const themeData = getTheme(themeId);
+  if (themeData.deco?.avatarFrame) {
+    root.style.setProperty("--theme-avatar-frame", `url('${themeData.deco.avatarFrame}')`);
+  }
+  if (themeData.deco?.bubbleSticker) {
+    root.style.setProperty("--theme-bubble-sticker", `url('${themeData.deco.bubbleSticker}')`);
+  }
+  if (themeData.deco?.seal) {
+    root.style.setProperty("--theme-seal", `url('${themeData.deco.seal}')`);
+  }
+
   // 2. 应用字体
   if (currentOverrides.fontTitle) {
     root.style.setProperty("--font-title", `'${currentOverrides.fontTitle}', serif`);

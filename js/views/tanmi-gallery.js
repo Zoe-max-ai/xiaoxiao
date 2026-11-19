@@ -76,9 +76,15 @@ export async function guichuGalleryView() {
       border: 1px solid var(--line-light);
     `;
     // ✅ 这里改成统一调用getImageUrl，seed图、上传图都正常取地址
-    const thumbUrl = await getImageUrl(img.id, true);
+    // 👈 强制用原图（base64）来渲染缩略图，虽然慢一点，但保证能看到！
+    let thumbUrl = img.base64;
+    // 如果原图没有，再尝试拿缩略图兜底
+    if (!thumbUrl) {
+      thumbUrl = await getImageUrl(img.id, true);
+    }
+
     if (thumbUrl) {
-      cell.innerHTML = `<img src="${thumbUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+      cell.innerHTML = `<img src="${thumbUrl}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">`;
     } else {
       cell.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--ink-dim);font-size:11px;">无图</div>`;
     }

@@ -11,6 +11,7 @@ import {
   getNpcsByCharacter, createNpc, updateNpc, deleteNpc,
 } from "../services/npc-service.js";
 import { state } from "../core/state.js";
+import { getAllImages } from "../services/image-service.js";
 
 export async function yajiEditView({ params }) {
   const el = document.createElement("div");
@@ -120,11 +121,37 @@ export async function yajiEditView({ params }) {
 
   el.insertBefore(pageHeader("编 辑 角 色", "#/yaji"), el.firstChild);
 
-  /* ========== 立绘 / 头像上传 ========== */
+  /* ========== 立绘 / 头像上传（完全整合版） ========== */
   let tempAvatarBlob = null;
   const avatarPreview = el.querySelector("#avatar-preview");
   const avatarInput = el.querySelector("#avatar-input");
-  avatarPreview.onclick = () => avatarInput.click();
+  
+  avatarPreview.onclick = async () => {
+    const { showModal, closeModal } = await import("../ui/modal.js");
+    const { openImagePicker } = await import("../ui/image-picker.js");
+    
+    const choice = showModal(`
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="menu-item" id="choice-local" style="padding:14px; background:var(--paper-soft); border:1px solid var(--line-light); border-radius:6px; font-family:var(--font-title);">从手机/电脑上传</button>
+        <button class="menu-item" id="choice-gallery" style="padding:14px; background:var(--paper-soft); border:1px solid var(--line-light); border-radius:6px; font-family:var(--font-title);">从绘卷·头像中选</button>
+      </div>
+    `);
+    
+    choice.querySelector("#choice-local").onclick = () => { closeModal(choice); avatarInput.click(); };
+    choice.querySelector("#choice-gallery").onclick = () => {
+      closeModal(choice);
+openImagePicker("avatar", async (imgId) => {
+  const allImgs = await getAllImages(); // 👈 用这个查
+  const img = allImgs.find(i => i.id === imgId);
+  if (img) {
+    const url = img.base64 || img.thumb?.data;
+    tempAvatarBlob = url;
+    avatarPreview.innerHTML = `<img src="${url}" style="...">`;
+  }
+});
+    };
+  };
+
   avatarInput.onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -134,26 +161,47 @@ export async function yajiEditView({ params }) {
     avatarPreview.innerHTML = `<img src="${URL.createObjectURL(cropped)}" style="width:100%;height:100%;object-fit:cover">`;
   };
 
+
   let tempPortraitBlob = null;
   const portraitPreview = el.querySelector("#portrait-preview");
   const portraitInput = el.querySelector("#portrait-input");
-  portraitPreview.onclick = () => portraitInput.click();
+
+  portraitPreview.onclick = async () => {
+    const { showModal, closeModal } = await import("../ui/modal.js");
+    const { openImagePicker } = await import("../ui/image-picker.js");
+    
+    const choice = showModal(`
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="menu-item" id="choice-local" style="padding:14px; background:var(--paper-soft); border:1px solid var(--line-light); border-radius:6px; font-family:var(--font-title);">从手机/电脑上传</button>
+        <button class="menu-item" id="choice-gallery" style="padding:14px; background:var(--paper-soft); border:1px solid var(--line-light); border-radius:6px; font-family:var(--font-title);">从绘卷·立绘中选</button>
+      </div>
+    `);
+    
+    choice.querySelector("#choice-local").onclick = () => { closeModal(choice); portraitInput.click(); };
+    choice.querySelector("#choice-gallery").onclick = () => {
+      closeModal(choice);
+openImagePicker("portrait", async (imgId) => {
+  const allImgs = await getAllImages(); // 👈 用这个查
+  const img = allImgs.find(i => i.id === imgId);
+  if (img) {
+    const url = img.base64 || img.thumb?.data;
+    tempPortraitBlob = url;
+    portraitPreview.innerHTML = `<img src="${url}" style="...">`;
+  }
+});
+    };
+  };
+
   portraitInput.onchange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    // 👈 读取文件并压缩
     const reader = new FileReader();
     reader.onload = async (ev) => {
       const rawBase64 = ev.target.result;
       try {
         const { compressImage } = await import("../ui/image-cropper.js");
         const compressedBase64 = await compressImage(rawBase64, 1);
-        
-        
-        // ✅ 改成直接存 Base64 字符串
         tempPortraitBlob = compressedBase64; 
-        
         portraitPreview.innerHTML = `<img src="${compressedBase64}" style="width:100%;height:100%;object-fit:cover">`;
       } catch (err) {
         console.error(err);
@@ -162,6 +210,7 @@ export async function yajiEditView({ params }) {
     };
     reader.readAsDataURL(file);
   };
+
 
   /* ========== 回忆 / 事实 ========== */
   let memories = Array.isArray(char.memories) ? [...char.memories] : [];
@@ -482,13 +531,11 @@ export async function yajiEditView({ params }) {
 
     let avatarId = char.avatarId;
     if (tempAvatarBlob) {
-      // 👈 确保传过去的确实是 Blob，如果是 base64 就要处理
       avatarId = await saveToGallery(tempAvatarBlob, "avatar");
     }
 
     let portraitId = char.portraitId;
     if (tempPortraitBlob) {
-      // 👈 这里的 tempPortraitBlob 可能是 Blob，也可能是空
       if (!tempPortraitBlob) {
         showToast("立绘文件丢失，请重新上传");
         return;
@@ -496,7 +543,6 @@ export async function yajiEditView({ params }) {
       portraitId = await saveToGallery(tempPortraitBlob, "portrait");
     }
 
-    // 使用 try...catch 捕获保存报错，防止弹全局报错
     try {
       await updateCharacter(characterId, {
         name,

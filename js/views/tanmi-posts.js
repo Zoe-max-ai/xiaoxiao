@@ -51,8 +51,15 @@ export async function tanmiPostsView() {
   el.querySelector("#btn-new").onclick = () => { location.hash = "#/tanmi/posts/new"; };
   el.querySelector("#btn-refresh").onclick = async () => {
     showToast("刷新中…");
-    await checkAutoPosts(ownerId);
-    await render();
+    // 👈 把耗时的操作放到后台，不卡当前页面交互
+    requestAnimationFrame(async () => {
+      try {
+        await checkAutoPosts(ownerId);
+        await render();
+      } catch (e) {
+        console.error(e);
+      }
+    });
   };
   el.querySelector("#btn-settings").onclick = () => openForumSettings(ownerId);
 
@@ -194,7 +201,7 @@ async function renderPostCard(post, authorMap, ownerId, onRefresh) {
   const displayName = isAnonymous ? "匿 名 侠 客" : author.name;
   const avatarHtml = isAnonymous 
     ? `<span>匿</span>` 
-    : (author.avatarUrl ? `<img src="${author.avatarUrl}" alt="">` : `<span>${escapeHtml(author.name[0] || "？")}</span>`);
+    : (author.avatarUrl ? `<img src="${author.avatarUrl}" loading="lazy" alt="">` : `<span>${escapeHtml(author.name[0] || "？")}</span>`);
 
   const isMine = post.authorType === "user" && post.authorId === ownerId;
   const likedByMe = (post.likedBy || []).includes(ownerId);
@@ -247,7 +254,8 @@ async function renderPostCard(post, authorMap, ownerId, onRefresh) {
   const arrowEl = card.querySelector(".post-arrow");
   const actionsEl = card.querySelector(".post-actions");
 
-  const toggleExpand = () => {
+  // 👈 注意：这里改成了 let，因为后面要重新赋值
+  let toggleExpand = () => {
     const open = expandEl.style.display !== "none";
     expandEl.style.display = open ? "none" : "block";
     arrowEl.innerHTML = open
@@ -370,8 +378,21 @@ async function renderPostCard(post, authorMap, ownerId, onRefresh) {
   sendBtn.onclick = sendComment;
   inputEl.onkeydown = (e) => { if (e.key === "Enter") sendComment(); };
 
+  // 👈 初始只加载点赞，不加载评论（懒加载）
   await renderLikes();
-  await renderComments();
+  
+  // 监听展开事件，只在用户第一次展开时，才去数据库拉取评论
+  let commentsLoaded = false;
+  const originalToggle = toggleExpand;
+  toggleExpand = () => {
+    originalToggle(); // 执行原本的展开/收起逻辑
+    
+    // 如果刚刚是展开的，并且还没加载过评论，就去加载
+    if (expandEl.style.display !== "none" && !commentsLoaded) {
+      commentsLoaded = true;
+      renderComments(); // 这时候才去查数据库拼 HTML
+    }
+  };
 
   return card;
 }

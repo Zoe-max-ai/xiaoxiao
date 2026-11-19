@@ -1,6 +1,7 @@
 import { db } from "../core/db.js";
 import { showModal, closeModal } from "./modal.js";
 import { getAllImages } from "../services/image-service.js";
+
 /**
  * 打开图片选择器
  * @param {string} category 过滤特定分类（如 "illustration", "game_cover", "background"），传 "all" 则显示全部
@@ -8,9 +9,30 @@ import { getAllImages } from "../services/image-service.js";
  */
 export async function openImagePicker(category = "all", onSelect) {
   const allImages = await getAllImages();
-  const list = category === "all"
-    ? allImages
-    : allImages.filter(img => img.category === category);
+  
+  // ==========================================
+  // 👈 核心修复：放宽分类过滤条件，防止找不到图
+  // ==========================================
+  let list = [];
+  if (category === "all") {
+    list = allImages;
+  } else if (category === "portrait") {
+    // 选立绘时，把立绘、插画、文游封面都放出来供你挑选
+    list = allImages.filter(img => 
+      img.category === "portrait" || 
+      img.category === "illustration" || 
+      img.category === "game_cover"
+    );
+  } else if (category === "avatar") {
+    // 选头像时，把头像和Q版小人放出来
+    list = allImages.filter(img => 
+      img.category === "avatar" || 
+      img.category === "qavatar"
+    );
+  } else {
+    // 其他分类，严格匹配
+    list = allImages.filter(img => img.category === category);
+  }
 
   const modal = showModal(`
     <div style="text-align:center;font-family:var(--font-title);font-size:16px;color:var(--cinnabar);letter-spacing:4px;margin-bottom:16px;">
@@ -29,30 +51,34 @@ export async function openImagePicker(category = "all", onSelect) {
     </div>
     <button class="btn ghost" id="picker-cancel" style="width:100%;margin-top:16px;padding:12px;">取 消</button>
   `);
+  
   modal.querySelector("#picker-cancel").onclick = () => closeModal(modal);
 
-for (const img of list) {
-  const imgEl = modal.querySelector(`.pick-img[data-src="${img.id}"]`);
-  if (!imgEl) continue;
+  // ==========================================
+  // 👈 你昨天改好的完美图片加载逻辑，原封不动保留
+  // ==========================================
+  for (const img of list) {
+    const imgEl = modal.querySelector(`.pick-img[data-src="${img.id}"]`);
+    if (!imgEl) continue;
 
-  // 1. 优先判断是不是本地路径（种子图）
-  if (img.base64 && typeof img.base64 === "string" && img.base64.startsWith("assets/")) {
-    imgEl.src = img.base64;
-  } 
-  // 2. 如果不是本地路径，再判断是不是用户上传的 Base64
-  else if (img.base64 && typeof img.base64 === "string" && img.base64.startsWith("data:image/")) {
-    imgEl.src = img.base64;
-  } 
-  // 3. 如果都没有，再用缩略图兜底（你昨天写的老逻辑）
-  else if (img.thumb?.data && typeof img.thumb.data === "string" && img.thumb.data.startsWith("data:image/")) {
-    imgEl.src = img.thumb.data;
-  } 
-  // 4. 实在没有，显示灰底
-  else {
-    imgEl.src = "";
-    imgEl.style.background = "#f4f1ec";
+    // 1. 优先判断是不是本地路径（种子图）
+    if (img.base64 && typeof img.base64 === "string" && img.base64.startsWith("assets/")) {
+      imgEl.src = img.base64;
+    } 
+    // 2. 如果不是本地路径，再判断是不是用户上传的 Base64
+    else if (img.base64 && typeof img.base64 === "string" && img.base64.startsWith("data:image/")) {
+      imgEl.src = img.base64;
+    } 
+    // 3. 如果都没有，再用缩略图兜底
+    else if (img.thumb?.data && typeof img.thumb.data === "string" && img.thumb.data.startsWith("data:image/")) {
+      imgEl.src = img.thumb.data;
+    } 
+    // 4. 实在没有，显示灰底
+    else {
+      imgEl.src = "";
+      imgEl.style.background = "#f4f1ec";
+    }
   }
-}
 
   modal.querySelectorAll(".pick-item").forEach(item => {
     item.onclick = () => {
